@@ -185,63 +185,96 @@ export default function TestAuth() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-violet-50 to-fuchsia-50 dark:from-slate-900 dark:via-purple-900/20 dark:to-violet-900/20">
       <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-6">
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-xl sm:text-2xl">🧪 Test de Autenticación Spotify</CardTitle>
-              <CardDescription className="text-sm sm:text-base">
+              <CardTitle className="text-xl sm:text-2xl text-slate-800 dark:text-slate-200">
+                🧪 Test de Autenticación Spotify
+              </CardTitle>
+              <CardDescription className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
                 Herramienta de diagnóstico para verificar la configuración antes de autenticar
               </CardDescription>
             </CardHeader>
           </Card>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
+            <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle>🔧 Tests de Configuración</CardTitle>
+                <CardTitle className="text-slate-800 dark:text-slate-200">🔧 Tests de Configuración</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <Button onClick={testSpotifyAuth} disabled={testing} className="w-full bg-blue-500 hover:bg-blue-600">
+              <CardContent className="space-y-3 text-slate-700 dark:text-slate-300">
+                <Button
+                  onClick={testSpotifyAuth}
+                  disabled={testing}
+                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-lg"
+                >
                   {testing ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : "🔍"}
                   Test Configuración
                 </Button>
 
-                <Button onClick={testSpotifyConnection} variant="outline" className="w-full">
+                <Button
+                  onClick={testSpotifyConnection}
+                  variant="outline"
+                  className="w-full border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                >
                   🔗 Test Conexión API
                 </Button>
 
-                <Button onClick={checkSpotifySettings} variant="outline" className="w-full">
+                <Button
+                  onClick={checkSpotifySettings}
+                  variant="outline"
+                  className="w-full border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                >
                   🔍 Verificar Settings Spotify
                 </Button>
 
-                <Button onClick={clearLogs} variant="outline" className="w-full">
+                <Button
+                  onClick={clearLogs}
+                  variant="outline"
+                  className="w-full border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                >
                   🗑️ Limpiar Logs
                 </Button>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle>🚀 Tests de Autenticación</CardTitle>
+                <CardTitle className="text-slate-800 dark:text-slate-200">🚀 Tests de Autenticación</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <Button onClick={testFullAuthFlow} className="w-full bg-green-500 hover:bg-green-600">
+              <CardContent className="space-y-3 text-slate-700 dark:text-slate-300">
+                <Button
+                  onClick={testFullAuthFlow}
+                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-lg"
+                >
                   🧪 Test Flujo Completo
                 </Button>
 
-                <Button onClick={proceedToAuth} className="w-full bg-green-600 hover:bg-green-700">
+                <Button
+                  onClick={proceedToAuth}
+                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-lg"
+                >
                   🚀 Ir a App Principal
                 </Button>
 
-                <Button onClick={openSpotifyDashboard} variant="outline" className="w-full">
+                <Button
+                  onClick={openSpotifyDashboard}
+                  variant="outline"
+                  className="w-full border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                >
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Abrir Spotify Dashboard
                 </Button>
 
-                <Button onClick={copyLogs} variant="outline" className="w-full" disabled={logs.length === 0}>
+                <Button
+                  onClick={copyLogs}
+                  variant="outline"
+                  className="w-full border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  disabled={logs.length === 0}
+                >
                   <Copy className="w-4 h-4 mr-2" />
                   Copiar Logs
                 </Button>
@@ -249,14 +282,14 @@ export default function TestAuth() {
             </Card>
           </div>
 
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>📋 Logs de Diagnóstico</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-slate-800 dark:text-slate-200">📋 Logs de Diagnóstico</CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-400">
                 {logs.length === 0 ? "Ejecuta un test para ver los resultados" : `${logs.length} entradas`}
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="text-slate-700 dark:text-slate-300">
               <div className="bg-black text-green-400 p-4 rounded-lg font-mono text-sm max-h-96 overflow-y-auto">
                 {logs.length === 0 ? (
                   <div className="text-gray-500">Esperando resultados del test...</div>
@@ -272,7 +305,7 @@ export default function TestAuth() {
           </Card>
 
           <Alert>
-            <AlertDescription>
+            <AlertDescription className="text-slate-700 dark:text-slate-300">
               <strong>💡 Siguiente paso:</strong> Haz clic en "Test Flujo Completo" para probar la autenticación real
               con Spotify. Esto te llevará directamente al proceso de OAuth.
             </AlertDescription>

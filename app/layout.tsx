@@ -7,9 +7,12 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Spotify Playlist Manager",
+  title: "Spotify Playlist SudoCode",
   description: "Exporta e importa tus playlists de Spotify con archivos CSV",
   generator: "v0.dev",
+  icons: {
+    icon: "/favicon.ico",
+  },
 }
 
 export default function RootLayout({

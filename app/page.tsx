@@ -11,6 +11,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Music, Download, Upload, Heart, List, User, LogOut, Users2, Eye, CheckCircle } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Navbar } from "@/components/navbar"
+import Image from "next/image"
+import { useTheme } from "next-themes"
 
 interface SpotifyUser {
   id: string
@@ -64,6 +66,7 @@ export default function SpotifyPlaylistManager() {
   const [exportStats, setExportStats] = useState<ExportStats | null>(null)
   const [showExportPreview, setShowExportPreview] = useState(false)
   const [currentExportItem, setCurrentExportItem] = useState("")
+  const { theme } = useTheme()
 
   useEffect(() => {
     // Check for stored token first
@@ -610,20 +613,34 @@ export default function SpotifyPlaylistManager() {
 
   if (!accessToken) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-slate-900 dark:via-slate-800 dark:to-emerald-900">
         <Navbar />
         <div className="flex items-center justify-center p-4 min-h-[calc(100vh-4rem)]">
           <div className="w-full max-w-2xl space-y-6">
-            <Card className="w-full max-w-md mx-auto">
+            <Card className="w-full max-w-md mx-auto border-0 shadow-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
               <CardHeader className="text-center">
-                <div className="mx-auto w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mb-4">
-                  <Music className="w-6 h-6 text-white" />
+                <div className="mx-auto w-16 h-16 mb-6 relative">
+                  <Image
+                    src={theme === "dark" ? "/logo-dark.png" : "/logo-light.png"}
+                    alt="Spotify SudoCode Logo"
+                    width={64}
+                    height={64}
+                    className="object-contain"
+                    priority
+                  />
                 </div>
-                <CardTitle className="text-2xl">Spotify Playlist Manager</CardTitle>
-                <CardDescription>Exporta e importa tus playlists de Spotify con archivos CSV</CardDescription>
+                <CardTitle className="text-2xl bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
+                  Spotify Playlist SudoCode
+                </CardTitle>
+                <CardDescription className="text-slate-600 dark:text-slate-300">
+                  Exporta e importa tus playlists de Spotify con archivos CSV
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button onClick={loginToSpotify} className="w-full bg-green-500 hover:bg-green-600">
+                <Button
+                  onClick={loginToSpotify}
+                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                >
                   <Music className="w-4 h-4 mr-2" />
                   Conectar con Spotify
                 </Button>
@@ -636,20 +653,29 @@ export default function SpotifyPlaylistManager() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-slate-900 dark:via-slate-800 dark:to-emerald-900">
       <Navbar />
       <div className="max-w-4xl mx-auto p-4 space-y-6">
         {/* Header */}
-        <Card>
+        <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-                  <Music className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 relative">
+                  <Image
+                    src={theme === "dark" ? "/logo-dark.png" : "/logo-light.png"}
+                    alt="Spotify SudoCode Logo"
+                    width={48}
+                    height={48}
+                    className="object-contain"
+                    priority
+                  />
                 </div>
                 <div>
-                  <CardTitle className="text-2xl">Spotify Playlist Manager</CardTitle>
-                  <CardDescription className="flex items-center space-x-2">
+                  <CardTitle className="text-2xl bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
+                    Spotify Playlist SudoCode
+                  </CardTitle>
+                  <CardDescription className="flex items-center space-x-2 text-slate-600 dark:text-slate-300">
                     <User className="w-4 h-4" />
                     <span>Conectado como {user?.display_name}</span>
                     {user?.email && (
@@ -663,7 +689,11 @@ export default function SpotifyPlaylistManager() {
               </div>
               <div className="flex items-center space-x-2">
                 <ThemeToggle />
-                <Button variant="outline" onClick={logout}>
+                <Button
+                  variant="outline"
+                  onClick={logout}
+                  className="border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                >
                   <LogOut className="w-4 h-4 mr-2" />
                   Desconectar
                 </Button>
@@ -674,48 +704,48 @@ export default function SpotifyPlaylistManager() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-teal-500 text-white">
             <CardContent className="p-6">
               <div className="flex items-center space-x-2">
-                <List className="w-5 h-5 text-green-500" />
+                <List className="w-5 h-5" />
                 <div>
                   <p className="text-2xl font-bold">{playlists.length}</p>
-                  <p className="text-sm text-muted-foreground">Playlists</p>
+                  <p className="text-sm text-emerald-100">Playlists</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-rose-500 to-pink-500 text-white">
             <CardContent className="p-6">
               <div className="flex items-center space-x-2">
-                <Heart className="w-5 h-5 text-red-500" />
+                <Heart className="w-5 h-5" />
                 <div>
                   <p className="text-2xl font-bold">♥</p>
-                  <p className="text-sm text-muted-foreground">Canciones favoritas</p>
+                  <p className="text-sm text-rose-100">Canciones favoritas</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-indigo-500 text-white">
             <CardContent className="p-6">
               <div className="flex items-center space-x-2">
-                <Music className="w-5 h-5 text-blue-500" />
+                <Music className="w-5 h-5" />
                 <div>
                   <p className="text-2xl font-bold">
                     {playlists.reduce((total, playlist) => total + playlist.tracks.total, 0)}
                   </p>
-                  <p className="text-sm text-muted-foreground">Total canciones</p>
+                  <p className="text-sm text-blue-100">Total canciones</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-violet-500 text-white">
             <CardContent className="p-6">
               <div className="flex items-center space-x-2">
-                <Users2 className="w-5 h-5 text-purple-500" />
+                <Users2 className="w-5 h-5" />
                 <div>
                   <p className="text-2xl font-bold">?</p>
-                  <p className="text-sm text-muted-foreground">Artistas seguidos</p>
+                  <p className="text-sm text-purple-100">Artistas seguidos</p>
                 </div>
               </div>
             </CardContent>
@@ -724,43 +754,45 @@ export default function SpotifyPlaylistManager() {
 
         {/* Export Preview */}
         {showExportPreview && exportStats && (
-          <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-blue-800 dark:text-blue-200">
                 <Eye className="w-5 h-5" />
                 <span>Vista Previa de Exportación</span>
               </CardTitle>
-              <CardDescription>Esto es lo que se exportará en los archivos CSV</CardDescription>
+              <CardDescription className="text-blue-600 dark:text-blue-300">
+                Esto es lo que se exportará en los archivos CSV
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{exportStats.playlists}</p>
-                  <p className="text-sm text-muted-foreground">Playlists</p>
+                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{exportStats.playlists}</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Playlists</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{exportStats.tracks}</p>
-                  <p className="text-sm text-muted-foreground">Canciones totales</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Canciones totales</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">{exportStats.likedSongs}</p>
-                  <p className="text-sm text-muted-foreground">Canciones favoritas</p>
+                  <p className="text-2xl font-bold text-rose-600 dark:text-rose-400">{exportStats.likedSongs}</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Canciones favoritas</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                     {exportStats.followedArtists}
                   </p>
-                  <p className="text-sm text-muted-foreground">Artistas seguidos</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Artistas seguidos</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{exportStats.artists}</p>
-                  <p className="text-sm text-muted-foreground">Artistas únicos</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Artistas únicos</p>
                 </div>
               </div>
 
-              <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950 mb-4">
-                <CheckCircle className="h-4 w-4" />
-                <AlertDescription className="text-green-800 dark:text-green-200">
+              <Alert className="border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/50 mb-4">
+                <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <AlertDescription className="text-emerald-800 dark:text-emerald-200">
                   <strong>Se generará 1 archivo unificado:</strong>
                   <br />• <strong>spotify_complete_export_[usuario]_[fecha].csv</strong> - Todas las canciones y
                   artistas en un solo archivo
@@ -769,11 +801,19 @@ export default function SpotifyPlaylistManager() {
               </Alert>
 
               <div className="flex space-x-2">
-                <Button onClick={exportToCSV} disabled={loading} className="bg-green-500 hover:bg-green-600">
+                <Button
+                  onClick={exportToCSV}
+                  disabled={loading}
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg"
+                >
                   <Download className="w-4 h-4 mr-2" />
                   Confirmar Exportación
                 </Button>
-                <Button onClick={() => setShowExportPreview(false)} variant="outline">
+                <Button
+                  onClick={() => setShowExportPreview(false)}
+                  variant="outline"
+                  className="border-slate-200 dark:border-slate-700"
+                >
                   Cancelar
                 </Button>
               </div>
@@ -782,24 +822,32 @@ export default function SpotifyPlaylistManager() {
         )}
 
         {/* Export Section */}
-        <Card>
+        <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
+            <CardTitle className="flex items-center space-x-2 text-slate-800 dark:text-slate-200">
               <Download className="w-5 h-5" />
               <span>Exportar Contenido</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-slate-600 dark:text-slate-400">
               Descarga todas tus playlists, canciones favoritas y artistas en formato CSV
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {!showExportPreview ? (
-              <Button onClick={previewExport} disabled={loading} className="w-full bg-blue-500 hover:bg-blue-600">
+              <Button
+                onClick={previewExport}
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-lg"
+              >
                 <Eye className="w-4 h-4 mr-2" />
                 Ver Qué Se Exportará
               </Button>
             ) : (
-              <Button onClick={exportToCSV} disabled={loading} className="w-full bg-green-500 hover:bg-green-600">
+              <Button
+                onClick={exportToCSV}
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg"
+              >
                 <Download className="w-4 h-4 mr-2" />
                 Exportar a CSV
               </Button>
@@ -808,28 +856,33 @@ export default function SpotifyPlaylistManager() {
         </Card>
 
         {/* Import Section */}
-        <Card>
+        <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
+            <CardTitle className="flex items-center space-x-2 text-slate-800 dark:text-slate-200">
               <Upload className="w-5 h-5" />
               <span>Importar Playlists</span>
             </CardTitle>
-            <CardDescription>Sube un archivo CSV para crear playlists y agregar canciones favoritas</CardDescription>
+            <CardDescription className="text-slate-600 dark:text-slate-400">
+              Sube un archivo CSV para crear playlists y agregar canciones favoritas
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="csv-file">Seleccionar archivo CSV</Label>
+              <Label htmlFor="csv-file" className="text-slate-700 dark:text-slate-300">
+                Seleccionar archivo CSV
+              </Label>
               <Input
                 id="csv-file"
                 type="file"
                 accept=".csv"
                 onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                className="border-slate-200 dark:border-slate-700 focus:border-emerald-500 dark:focus:border-emerald-400"
               />
             </div>
             <Button
               onClick={importFromCSV}
               disabled={!selectedFile || loading}
-              className="w-full bg-blue-500 hover:bg-blue-600"
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-lg"
             >
               <Upload className="w-4 h-4 mr-2" />
               Importar desde CSV
@@ -839,10 +892,10 @@ export default function SpotifyPlaylistManager() {
 
         {/* Progress and Messages */}
         {loading && (
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardContent className="p-6">
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
                   <span>{currentExportItem || message}</span>
                   <span>{Math.round(progress)}%</span>
                 </div>
@@ -853,28 +906,38 @@ export default function SpotifyPlaylistManager() {
         )}
 
         {message && !loading && (
-          <Alert>
-            <AlertDescription>{message}</AlertDescription>
+          <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/50">
+            <AlertDescription className="text-blue-800 dark:text-blue-200">{message}</AlertDescription>
           </Alert>
         )}
 
         {/* Playlists List */}
-        <Card>
+        <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle>Tus Playlists</CardTitle>
-            <CardDescription>Lista de todas tus playlists de Spotify</CardDescription>
+            <CardTitle className="text-slate-800 dark:text-slate-200">Tus Playlists</CardTitle>
+            <CardDescription className="text-slate-600 dark:text-slate-400">
+              Lista de todas tus playlists de Spotify
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {playlists.map((playlist) => (
-                <div key={playlist.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div
+                  key={playlist.id}
+                  className="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50/50 dark:bg-slate-700/50"
+                >
                   <div>
-                    <p className="font-medium">{playlist.name}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-medium text-slate-800 dark:text-slate-200">{playlist.name}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
                       {playlist.tracks.total} canciones • {playlist.owner.display_name}
                     </p>
                   </div>
-                  <Badge variant="secondary">{playlist.tracks.total}</Badge>
+                  <Badge
+                    variant="secondary"
+                    className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
+                  >
+                    {playlist.tracks.total}
+                  </Badge>
                 </div>
               ))}
             </div>

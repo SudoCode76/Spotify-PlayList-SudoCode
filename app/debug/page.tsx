@@ -37,29 +37,31 @@ export default function DebugPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-blue-900/20 dark:to-indigo-900/20">
       <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="space-y-6">
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-xl sm:text-2xl">🔧 Debug de Configuración (2025)</CardTitle>
-              <CardDescription className="text-sm sm:text-base">
+              <CardTitle className="text-xl sm:text-2xl text-slate-800 dark:text-slate-200">
+                🔧 Debug de Configuración (2025)
+              </CardTitle>
+              <CardDescription className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
                 Diagnóstico actualizado según las nuevas reglas de Spotify
               </CardDescription>
             </CardHeader>
           </Card>
 
           {/* Estado actual del acceso */}
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>🌐 Estado Actual del Acceso</CardTitle>
+              <CardTitle className="text-slate-800 dark:text-slate-200">🌐 Estado Actual del Acceso</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 border rounded">
                   <div>
-                    <p className="font-medium">URL actual:</p>
+                    <p className="font-medium text-slate-700 dark:text-slate-300">URL actual:</p>
                     <code className="text-sm">{currentOrigin}</code>
                   </div>
                   <div>
@@ -78,7 +80,11 @@ export default function DebugPage() {
                       <strong>⚠️ Problema detectado:</strong> Estás usando <code>localhost</code>. Desde abril 2025,
                       Spotify requiere que uses <code>127.0.0.1</code> para desarrollo local.
                       <div className="mt-2">
-                        <Button size="sm" onClick={openCorrectURL} className="bg-green-500 hover:bg-green-600">
+                        <Button
+                          size="sm"
+                          onClick={openCorrectURL}
+                          className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg"
+                        >
                           Abrir URL Correcta
                         </Button>
                       </div>
@@ -99,10 +105,12 @@ export default function DebugPage() {
           </Card>
 
           {/* URL de Redirección */}
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>📍 URL de Redirección Correcta</CardTitle>
-              <CardDescription>Esta es la URL que debes configurar en Spotify Developer Dashboard</CardDescription>
+              <CardTitle className="text-slate-800 dark:text-slate-200">📍 URL de Redirección Correcta</CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-400">
+                Esta es la URL que debes configurar en Spotify Developer Dashboard
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Alert>
@@ -110,7 +118,10 @@ export default function DebugPage() {
                   <div className="font-mono text-sm bg-gray-100 p-2 rounded border">{redirectUri}</div>
                 </AlertDescription>
               </Alert>
-              <Button onClick={() => copyToClipboard(redirectUri)} className="w-full">
+              <Button
+                onClick={() => copyToClipboard(redirectUri)}
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg"
+              >
                 <Copy className="w-4 h-4 mr-2" />
                 Copiar URL de Redirección
               </Button>
@@ -118,9 +129,9 @@ export default function DebugPage() {
           </Card>
 
           {/* Client ID */}
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>🔑 Estado del Client ID</CardTitle>
+              <CardTitle className="text-slate-800 dark:text-slate-200">🔑 Estado del Client ID</CardTitle>
             </CardHeader>
             <CardContent>
               <Alert
@@ -143,7 +154,9 @@ export default function DebugPage() {
                     <>
                       <XCircle className="w-4 h-4 inline mr-2" />
                       <strong>Client ID no configurado</strong>
-                      <p className="mt-1">Necesitas configurar tu Client ID en el archivo .env.local</p>
+                      <p className="mt-1 text-slate-700 dark:text-slate-300">
+                        Necesitas configurar tu Client ID en el archivo .env.local
+                      </p>
                     </>
                   )}
                 </AlertDescription>
@@ -152,9 +165,9 @@ export default function DebugPage() {
           </Card>
 
           {/* Instrucciones rápidas */}
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>⚡ Configuración Rápida</CardTitle>
+              <CardTitle className="text-slate-800 dark:text-slate-200">⚡ Configuración Rápida</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
@@ -162,9 +175,14 @@ export default function DebugPage() {
                   <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
                     1
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 text-slate-700 dark:text-slate-300">
                     <p className="font-medium">Abre Spotify Developer Dashboard</p>
-                    <Button variant="outline" size="sm" onClick={openSpotifyDashboard} className="mt-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={openSpotifyDashboard}
+                      className="mt-1 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    >
                       <ExternalLink className="w-4 h-4 mr-2" />
                       Abrir Dashboard
                     </Button>
@@ -175,11 +193,16 @@ export default function DebugPage() {
                   <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
                     2
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 text-slate-700 dark:text-slate-300">
                     <p className="font-medium">Agrega esta Redirect URI:</p>
                     <div className="bg-gray-100 p-2 rounded mt-1">
                       <code className="text-sm">{redirectUri}</code>
-                      <Button size="sm" variant="ghost" onClick={() => copyToClipboard(redirectUri)} className="ml-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => copyToClipboard(redirectUri)}
+                        className="ml-2 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                      >
                         <Copy className="w-3 h-3" />
                       </Button>
                     </div>
@@ -190,7 +213,7 @@ export default function DebugPage() {
                   <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
                     3
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 text-slate-700 dark:text-slate-300">
                     <p className="font-medium">Copia tu Client ID al archivo .env.local</p>
                     <code className="text-sm bg-gray-100 p-1 rounded">NEXT_PUBLIC_SPOTIFY_CLIENT_ID=tu_client_id</code>
                   </div>
@@ -201,9 +224,13 @@ export default function DebugPage() {
                     <div className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
                       4
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 text-slate-700 dark:text-slate-300">
                       <p className="font-medium">Accede usando la IP correcta:</p>
-                      <Button size="sm" onClick={openCorrectURL} className="mt-1 bg-green-500 hover:bg-green-600">
+                      <Button
+                        size="sm"
+                        onClick={openCorrectURL}
+                        className="mt-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg"
+                      >
                         Ir a http://127.0.0.1:3000
                       </Button>
                     </div>
@@ -214,9 +241,9 @@ export default function DebugPage() {
           </Card>
 
           {/* Comparación de URLs */}
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>📊 Comparación de URLs</CardTitle>
+              <CardTitle className="text-slate-800 dark:text-slate-200">📊 Comparación de URLs</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="grid grid-cols-1 gap-3">

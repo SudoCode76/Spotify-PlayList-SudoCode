@@ -17,14 +17,16 @@ export default function SetupGuide() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-slate-900 dark:via-emerald-900/20 dark:to-teal-900/20">
       <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-3xl">
         <div className="space-y-6">
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-2xl sm:text-3xl">🚀 Configuración para Uso Público</CardTitle>
-              <CardDescription className="text-base sm:text-lg">
+              <CardTitle className="text-2xl sm:text-3xl text-slate-800 dark:text-slate-200">
+                🚀 Configuración para Uso Público
+              </CardTitle>
+              <CardDescription className="text-base sm:text-lg text-slate-600 dark:text-slate-400">
                 Cómo hacer que tu aplicación funcione para cualquier usuario de Spotify
               </CardDescription>
             </CardHeader>
@@ -40,17 +42,20 @@ export default function SetupGuide() {
           </Alert>
 
           {/* Paso 1: Configurar para desarrollo extendido */}
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-slate-800 dark:text-slate-200">
                 <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
                   1
                 </div>
                 <span>Configurar Modo de Desarrollo Extendido</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <Button onClick={openSpotifyDashboard} className="w-full bg-green-500 hover:bg-green-600">
+            <CardContent className="space-y-4 text-slate-700 dark:text-slate-300">
+              <Button
+                onClick={openSpotifyDashboard}
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg"
+              >
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Abrir Spotify Developer Dashboard
               </Button>
@@ -88,16 +93,16 @@ export default function SetupGuide() {
           </Card>
 
           {/* Paso 2: Solicitar aprobación para producción */}
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-slate-800 dark:text-slate-200">
                 <div className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
                   2
                 </div>
                 <span>Solicitar Aprobación para Producción (Recomendado)</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 text-slate-700 dark:text-slate-300">
               <div className="space-y-2">
                 <p>Para uso público sin limitaciones:</p>
                 <p>
@@ -137,16 +142,16 @@ export default function SetupGuide() {
           </Card>
 
           {/* Paso 3: Configurar URLs de producción */}
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-slate-800 dark:text-slate-200">
                 <div className="bg-purple-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
                   3
                 </div>
                 <span>Configurar URLs de Producción</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 text-slate-700 dark:text-slate-300">
               <div className="space-y-2">
                 <p>1. Despliega tu aplicación en Vercel, Netlify, o tu plataforma preferida</p>
                 <p>2. En Spotify Dashboard → Settings → Redirect URIs</p>
@@ -159,7 +164,7 @@ export default function SetupGuide() {
                   size="sm"
                   variant="ghost"
                   onClick={() => copyToClipboard("https://tu-dominio.vercel.app/callback")}
-                  className="ml-2"
+                  className="ml-2 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
                   <Copy className="w-3 h-3" />
                 </Button>
@@ -175,7 +180,7 @@ export default function SetupGuide() {
                   size="sm"
                   variant="ghost"
                   onClick={() => copyToClipboard("http://127.0.0.1:3000/callback")}
-                  className="ml-2"
+                  className="ml-2 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
                   <Copy className="w-3 h-3" />
                 </Button>
@@ -184,16 +189,16 @@ export default function SetupGuide() {
           </Card>
 
           {/* Paso 4: Información sobre permisos */}
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-slate-800 dark:text-slate-200">
                 <div className="bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
                   4
                 </div>
                 <span>Permisos y Scopes Necesarios</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 text-slate-700 dark:text-slate-300">
               <div className="space-y-2">
                 <p>Tu aplicación solicita estos permisos:</p>
                 <ul className="list-disc list-inside ml-4 space-y-1">
@@ -234,11 +239,11 @@ export default function SetupGuide() {
           </Card>
 
           {/* Alternativa temporal */}
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>🔄 Alternativa Temporal</CardTitle>
+              <CardTitle className="text-slate-800 dark:text-slate-200">🔄 Alternativa Temporal</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 text-slate-700 dark:text-slate-300">
               <Alert className="border-yellow-200 bg-yellow-50">
                 <Info className="h-4 w-4" />
                 <AlertDescription className="text-yellow-800">
@@ -265,11 +270,11 @@ export default function SetupGuide() {
           </Card>
 
           {/* Checklist final */}
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>✅ Checklist Final</CardTitle>
+              <CardTitle className="text-slate-800 dark:text-slate-200">✅ Checklist Final</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="text-slate-700 dark:text-slate-300">
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <input type="checkbox" id="app-type" />

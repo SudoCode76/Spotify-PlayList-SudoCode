@@ -16,7 +16,7 @@ export default function RequestExtension() {
     window.open("https://developer.spotify.com/dashboard", "_blank")
   }
 
-  const appDescription = `Spotify Playlist Manager es una aplicación web que permite a los usuarios exportar e importar sus playlists de Spotify en formato CSV. 
+  const appDescription = `Spotify Playlist SudoCode es una aplicación web que permite a los usuarios exportar e importar sus playlists de Spotify en formato CSV. 
 
 FUNCIONALIDADES:
 - Exportar todas las playlists del usuario a un archivo CSV
@@ -40,15 +40,18 @@ JUSTIFICACIÓN COMERCIAL:
 La aplicación mejora la experiencia del usuario al permitir hacer respaldos de sus playlists y migrar música entre cuentas de manera sencilla.`
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-blue-900/20 dark:to-purple-900/20">
       <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-6">
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-2xl sm:text-3xl">🚀 Solicitar Extensión de Spotify</CardTitle>
-              <CardDescription className="text-base sm:text-lg">
-                Guía paso a paso para hacer tu aplicación pública y que funcione con cualquier cuenta de Spotify
+              <CardTitle className="text-2xl sm:text-3xl text-slate-800 dark:text-slate-200">
+                🚀 Solicitar Extensión de Spotify
+              </CardTitle>
+              <CardDescription className="text-base sm:text-lg text-slate-600 dark:text-slate-400">
+                Guía paso a paso para hacer tu aplicación Spotify Playlist SudoCode pública y que funcione con cualquier
+                cuenta de Spotify
               </CardDescription>
             </CardHeader>
           </Card>
@@ -63,17 +66,20 @@ La aplicación mejora la experiencia del usuario al permitir hacer respaldos de 
           </Alert>
 
           {/* Paso 1: Acceder a Spotify Dashboard */}
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-slate-800 dark:text-slate-200">
                 <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
                   1
                 </div>
                 <span>Acceder a Spotify Dashboard</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <Button onClick={openSpotifyDashboard} className="w-full bg-green-500 hover:bg-green-600">
+            <CardContent className="space-y-4 text-slate-700 dark:text-slate-300">
+              <Button
+                onClick={openSpotifyDashboard}
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg"
+              >
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Abrir Spotify Developer Dashboard
               </Button>
@@ -83,23 +89,28 @@ La aplicación mejora la experiencia del usuario al permitir hacer respaldos de 
           </Card>
 
           {/* Paso 2: Completar el formulario */}
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-slate-800 dark:text-slate-200">
                 <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
                   2
                 </div>
                 <span>Completar Formulario de Extensión</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 text-slate-700 dark:text-slate-300">
               <div className="space-y-4">
                 <div>
                   <h4 className="font-medium mb-2">📝 Descripción de la aplicación:</h4>
                   <div className="bg-gray-100 p-4 rounded border text-sm">
                     <pre className="whitespace-pre-wrap">{appDescription}</pre>
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => copyToClipboard(appDescription)} className="mt-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => copyToClipboard(appDescription)}
+                    className="mt-2 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  >
                     <Copy className="w-3 h-3 mr-1" />
                     Copiar descripción
                   </Button>
@@ -138,16 +149,16 @@ La aplicación mejora la experiencia del usuario al permitir hacer respaldos de 
           </Card>
 
           {/* Paso 3: Documentación requerida */}
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-slate-800 dark:text-slate-200">
                 <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
                   3
                 </div>
                 <span>Documentación Requerida</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 text-slate-700 dark:text-slate-300">
               <div className="space-y-3">
                 <div className="flex items-start space-x-3">
                   <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
@@ -181,16 +192,16 @@ La aplicación mejora la experiencia del usuario al permitir hacer respaldos de 
           </Card>
 
           {/* Paso 4: Información técnica */}
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-slate-800 dark:text-slate-200">
                 <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
                   4
                 </div>
                 <span>Información Técnica</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 text-slate-700 dark:text-slate-300">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <p className="font-medium">🔧 Scopes utilizados:</p>
@@ -228,16 +239,16 @@ La aplicación mejora la experiencia del usuario al permitir hacer respaldos de 
           </Card>
 
           {/* Paso 5: Envío y seguimiento */}
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-slate-800 dark:text-slate-200">
                 <div className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
                   5
                 </div>
                 <span>Envío y Seguimiento</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 text-slate-700 dark:text-slate-300">
               <div className="space-y-3">
                 <div className="flex items-start space-x-3">
                   <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
@@ -276,11 +287,11 @@ La aplicación mejora la experiencia del usuario al permitir hacer respaldos de 
           </Card>
 
           {/* Qué esperar después */}
-          <Card>
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>⏰ ¿Qué Esperar Después?</CardTitle>
+              <CardTitle className="text-slate-800 dark:text-slate-200">⏰ ¿Qué Esperar Después?</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 text-slate-700 dark:text-slate-300">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <p className="font-medium text-green-600">✅ Si es aprobada:</p>
@@ -305,9 +316,13 @@ La aplicación mejora la experiencia del usuario al permitir hacer respaldos de 
           </Card>
 
           {/* Botón de acción */}
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Button onClick={openSpotifyDashboard} size="lg" className="bg-green-500 hover:bg-green-600">
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+            <CardContent className="p-6 text-center text-slate-700 dark:text-slate-300">
+              <Button
+                onClick={openSpotifyDashboard}
+                size="lg"
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg"
+              >
                 <Users className="w-5 h-5 mr-2" />
                 Solicitar Extensión Ahora
               </Button>
