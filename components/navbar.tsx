@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Users, Settings, FileText, Home, HelpCircle, User } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -11,6 +11,11 @@ import Image from "next/image"
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const { theme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const toggleMenu = () => {
     setIsOpen(!isOpen)
@@ -27,14 +32,25 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3" onClick={closeMenu}>
             <div className="relative w-8 h-8 flex-shrink-0">
-              <Image
-                src={theme === "dark" ? "/logo-dark.png" : "/logo-light.png"}
-                alt="Spotify SudoCode Logo"
-                width={32}
-                height={32}
-                className="object-contain"
-                priority
-              />
+              {mounted ? (
+                <Image
+                  src={theme === "dark" ? "/logo-dark.png" : "/logo-light.png"}
+                  alt="Spotify SudoCode Logo"
+                  width={32}
+                  height={32}
+                  className="object-contain"
+                  priority
+                />
+              ) : (
+                <Image
+                  src="/logo-light.png"
+                  alt="Spotify SudoCode Logo"
+                  width={32}
+                  height={32}
+                  className="object-contain"
+                  priority
+                />
+              )}
             </div>
             <span className="font-bold text-lg bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent hidden sm:block">
               Spotify SudoCode

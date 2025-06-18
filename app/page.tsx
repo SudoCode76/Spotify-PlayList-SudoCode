@@ -56,6 +56,7 @@ interface ExportStats {
 }
 
 export default function SpotifyPlaylistManager() {
+  const [mounted, setMounted] = useState(false)
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [user, setUser] = useState<SpotifyUser | null>(null)
   const [playlists, setPlaylists] = useState<Playlist[]>([])
@@ -69,6 +70,12 @@ export default function SpotifyPlaylistManager() {
   const { theme } = useTheme()
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+
     // Check for stored token first
     const storedToken = localStorage.getItem("spotify_access_token")
     const storedUser = localStorage.getItem("spotify_user")
@@ -106,7 +113,7 @@ export default function SpotifyPlaylistManager() {
         fetchUserProfile(token)
       }
     }
-  }, [])
+  }, [mounted])
 
   // Updated loginToSpotify function to use Authorization Code Flow
   const loginToSpotify = () => {
@@ -620,14 +627,25 @@ export default function SpotifyPlaylistManager() {
             <Card className="w-full max-w-md mx-auto border-0 shadow-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
               <CardHeader className="text-center">
                 <div className="mx-auto w-16 h-16 mb-6 relative">
-                  <Image
-                    src={theme === "dark" ? "/logo-dark.png" : "/logo-light.png"}
-                    alt="Spotify SudoCode Logo"
-                    width={64}
-                    height={64}
-                    className="object-contain"
-                    priority
-                  />
+                  {mounted ? (
+                    <Image
+                      src={theme === "dark" ? "/logo-dark.png" : "/logo-light.png"}
+                      alt="Spotify SudoCode Logo"
+                      width={64}
+                      height={64}
+                      className="object-contain"
+                      priority
+                    />
+                  ) : (
+                    <Image
+                      src="/logo-light.png"
+                      alt="Spotify SudoCode Logo"
+                      width={64}
+                      height={64}
+                      className="object-contain"
+                      priority
+                    />
+                  )}
                 </div>
                 <CardTitle className="text-2xl bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
                   Spotify Playlist SudoCode
@@ -662,14 +680,25 @@ export default function SpotifyPlaylistManager() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 relative">
-                  <Image
-                    src={theme === "dark" ? "/logo-dark.png" : "/logo-light.png"}
-                    alt="Spotify SudoCode Logo"
-                    width={48}
-                    height={48}
-                    className="object-contain"
-                    priority
-                  />
+                  {mounted ? (
+                    <Image
+                      src={theme === "dark" ? "/logo-dark.png" : "/logo-light.png"}
+                      alt="Spotify SudoCode Logo"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      priority
+                    />
+                  ) : (
+                    <Image
+                      src="/logo-light.png"
+                      alt="Spotify SudoCode Logo"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      priority
+                    />
+                  )}
                 </div>
                 <div>
                   <CardTitle className="text-2xl bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">

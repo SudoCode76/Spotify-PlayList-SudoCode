@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -7,9 +8,17 @@ import { Copy, ExternalLink, CheckCircle, XCircle, AlertTriangle } from "lucide-
 import { Navbar } from "@/components/navbar"
 
 export default function DebugPage() {
-  const currentHost = typeof window !== "undefined" ? window.location.hostname : "127.0.0.1"
-  const currentPort = typeof window !== "undefined" ? window.location.port : "3000"
-  const currentOrigin = typeof window !== "undefined" ? window.location.origin : "http://127.0.0.1:3000"
+  const [mounted, setMounted] = useState(false)
+  const [currentHost, setCurrentHost] = useState("127.0.0.1")
+  const [currentPort, setCurrentPort] = useState("3000")
+  const [currentOrigin, setCurrentOrigin] = useState("http://127.0.0.1:3000")
+
+  useEffect(() => {
+    setMounted(true)
+    setCurrentHost(window.location.hostname)
+    setCurrentPort(window.location.port)
+    setCurrentOrigin(window.location.origin)
+  }, [])
 
   // Determine correct redirect URI based on current environment
   let redirectUri: string
