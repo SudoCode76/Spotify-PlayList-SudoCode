@@ -82,7 +82,7 @@ export default function SpotifyPlaylistManager() {
     }
   }, [])
 
-  // Updated loginToSpotify function to use 127.0.0.1 instead of localhost
+  // Updated loginToSpotify function to use Authorization Code Flow instead of Implicit Flow
   const loginToSpotify = () => {
     const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || "your_client_id"
 
@@ -114,12 +114,15 @@ export default function SpotifyPlaylistManager() {
       "user-read-private user-read-email playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify",
     )
 
-    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodedRedirectUri}&scope=${scopes}`
+    // FIXED: Use response_type=code instead of response_type=token
+    // This uses Authorization Code Flow instead of Implicit Flow
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodedRedirectUri}&scope=${scopes}&show_dialog=true`
 
-    console.log("=== SPOTIFY AUTH URL ===")
+    console.log("=== SPOTIFY AUTH URL (FIXED) ===")
     console.log("Full URL:", authUrl)
+    console.log("Response Type: code (Authorization Code Flow)")
     console.log("Encoded Redirect URI:", encodedRedirectUri)
-    console.log("========================")
+    console.log("================================")
 
     // Validate client ID before redirecting
     if (!clientId || clientId === "your_client_id") {

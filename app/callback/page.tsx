@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -12,6 +12,7 @@ export default function SpotifyCallback() {
   const [message, setMessage] = useState("")
   const [debugInfo, setDebugInfo] = useState<string[]>([])
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const addDebug = (info: string) => {
     const timestamp = new Date().toLocaleTimeString()
@@ -22,50 +23,17 @@ export default function SpotifyCallback() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        addDebug("🚀 Callback iniciado")
+        addDebug("🚀 Callback iniciado (Authorization Code Flow)")
         addDebug(`📍 URL actual: ${window.location.href}`)
-        addDebug(`🔗 Hash completo: "${window.location.hash}"`)
-        addDebug(`📊 Longitud del hash: ${window.location.hash.length}`)
+        addDebug(`🔗 Hash: "${window.location.hash}"`)
+        addDebug(`🔍 Search params: "${window.location.search}"`)
 
-        // Get the hash from URL
-        const hash = window.location.hash.substring(1)
-        addDebug(`🔍 Hash procesado: "${hash}"`)
+        // Check for authorization code in URL parameters (Authorization Code Flow)
+        const code = searchParams.get("code")
+        const error = searchParams.get("error")
+        const errorDescription = searchParams.get("error_description")
 
-        if (!hash) {
-          addDebug("❌ No se encontró hash en la URL")
-          addDebug("🔍 Verificando si hay parámetros en query string...")
-
-          const urlParams = new URLSearchParams(window.location.search)
-          const error = urlParams.get("error")
-          const errorDescription = urlParams.get("error_description")
-
-          if (error) {
-            addDebug(`❌ Error en query params: ${error}`)
-            addDebug(`📝 Descripción: ${errorDescription}`)
-            setStatus("error")
-            setMessage(`Error de Spotify: ${errorDescription || error}`)
-            return
-          }
-
-          setStatus("error")
-          setMessage(
-            "No se encontraron parámetros de autenticación en la URL. Verifica la configuración de Redirect URI en Spotify.",
-          )
-          return
-        }
-
-        const params = new URLSearchParams(hash)
-        addDebug(`📋 Parámetros encontrados: ${Array.from(params.keys()).join(", ")}`)
-
-        const accessToken = params.get("access_token")
-        const tokenType = params.get("token_type")
-        const expiresIn = params.get("expires_in")
-        const error = params.get("error")
-        const errorDescription = params.get("error_description")
-
-        addDebug(`🔑 Access token: ${accessToken ? "✅ Presente" : "❌ Ausente"}`)
-        addDebug(`🏷️ Token type: ${tokenType || "No especificado"}`)
-        addDebug(`⏰ Expires in: ${expiresIn || "No especificado"} segundos`)
+        addDebug(`🔑 Authorization code: ${code ? "✅ Presente" : "❌ Ausente"}`)
         addDebug(`❌ Error: ${error || "Ninguno"}`)
 
         if (error) {
@@ -76,40 +44,58 @@ export default function SpotifyCallback() {
           return
         }
 
-        if (!accessToken) {
-          addDebug("❌ No se recibió access token")
+        if (!code) {
+          addDebug("❌ No se recibió código de autorización")
           setStatus("error")
-          setMessage("No se recibió el token de acceso de Spotify")
+          setMessage("No se recibió el código de autorización de Spotify")
           return
         }
 
-        addDebug(`✅ Token recibido: ${accessToken.substring(0, 20)}...`)
+        addDebug(`✅ Código recibido: ${code.substring(0, 20)}...`)
+        addDebug("🔄 Intercambiando código por token...")
+
+        // Exchange authorization code for access token
+        const tokenResponse = await fetch("/api/spotify/token", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            code: code,
+            redirect_uri: `${window.location.origin}/callback`,
+          }),
+        })
+
+        addDebug(`📡 Respuesta del intercambio de token: ${tokenResponse.status}`)
+
+        if (!tokenResponse.ok) {
+          const errorData = await tokenResponse.json()
+          addDebug(`❌ Error en intercambio: ${JSON.stringify(errorData)}`)
+          throw new Error(`Error al obtener token: ${tokenResponse.status}`)
+        }
+
+        const tokenData = await tokenResponse.json()
+        const accessToken = tokenData.access_token
+
+        addDebug(`✅ Token obtenido: ${accessToken.substring(0, 20)}...`)
         addDebug("🔍 Validando token con Spotify API...")
 
-        // Validate token by fetching user profile with timeout
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => {
-          addDebug("⏰ Timeout de 10 segundos alcanzado")
-          controller.abort()
-        }, 10000)
-
-        const response = await fetch("https://api.spotify.com/v1/me", {
+        // Validate token by fetching user profile
+        const userResponse = await fetch("https://api.spotify.com/v1/me", {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-          signal: controller.signal,
         })
 
-        clearTimeout(timeoutId)
-        addDebug(`📡 Respuesta de Spotify API: ${response.status} ${response.statusText}`)
+        addDebug(`📡 Respuesta de Spotify API: ${userResponse.status} ${userResponse.statusText}`)
 
-        if (!response.ok) {
-          const errorText = await response.text()
+        if (!userResponse.ok) {
+          const errorText = await userResponse.text()
           addDebug(`❌ Error de API: ${errorText}`)
-          throw new Error(`Token inválido: ${response.status} - ${errorText}`)
+          throw new Error(`Token inválido: ${userResponse.status} - ${errorText}`)
         }
 
-        const userData = await response.json()
+        const userData = await userResponse.json()
         addDebug(`👤 Usuario obtenido: ${userData.display_name} (${userData.id})`)
 
         // Store token and user data in localStorage
@@ -135,16 +121,12 @@ export default function SpotifyCallback() {
         addDebug(`📚 Stack trace: ${error.stack}`)
 
         setStatus("error")
-        if (error.name === "AbortError") {
-          setMessage("Timeout al validar con Spotify. La conexión tardó demasiado.")
-        } else {
-          setMessage(`Error al procesar la autenticación: ${error.message}`)
-        }
+        setMessage(`Error al procesar la autenticación: ${error.message}`)
       }
     }
 
     handleCallback()
-  }, [router])
+  }, [router, searchParams])
 
   const handleRetry = () => {
     addDebug("🔄 Reintentando autenticación...")
@@ -154,7 +136,8 @@ export default function SpotifyCallback() {
       "user-read-private user-read-email playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify",
     )
 
-    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=${scopes}`
+    // Use Authorization Code Flow
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=${scopes}&show_dialog=true`
     addDebug(`🔗 Nueva URL de auth: ${authUrl}`)
     window.location.href = authUrl
   }
