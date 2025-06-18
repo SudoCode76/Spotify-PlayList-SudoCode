@@ -53,7 +53,7 @@ export function Navbar() {
               )}
             </div>
             <span className="font-bold text-lg bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent hidden sm:block">
-              Spotify SudoCode
+              Playlist Spotify SudoCode
             </span>
             <span className="font-bold text-lg bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent sm:hidden">
               SC
