@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Music, Download, Upload, Heart, List, User, LogOut } from "lucide-react"
+import { Music, Download, Upload, Heart, List, User, LogOut, Users2, Eye, CheckCircle } from "lucide-react"
 
 interface SpotifyUser {
   id: string
@@ -34,6 +34,23 @@ interface Track {
   playlist_name?: string
 }
 
+interface Artist {
+  id: string
+  name: string
+  genres: string[]
+  followers: number
+  popularity: number
+  external_urls: { spotify: string }
+}
+
+interface ExportStats {
+  playlists: number
+  tracks: number
+  artists: number
+  likedSongs: number
+  followedArtists: number
+}
+
 export default function SpotifyPlaylistManager() {
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [user, setUser] = useState<SpotifyUser | null>(null)
@@ -42,6 +59,9 @@ export default function SpotifyPlaylistManager() {
   const [progress, setProgress] = useState(0)
   const [message, setMessage] = useState("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [exportStats, setExportStats] = useState<ExportStats | null>(null)
+  const [showExportPreview, setShowExportPreview] = useState(false)
+  const [currentExportItem, setCurrentExportItem] = useState("")
 
   useEffect(() => {
     // Check for stored token first
@@ -112,7 +132,7 @@ export default function SpotifyPlaylistManager() {
 
     const encodedRedirectUri = encodeURIComponent(redirectUri)
     const scopes = encodeURIComponent(
-      "user-read-private user-read-email playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify",
+      "user-read-private user-read-email playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify user-follow-read",
     )
 
     // Use Authorization Code Flow with show_dialog=true for better UX
@@ -236,53 +256,203 @@ export default function SpotifyPlaylistManager() {
     return tracks
   }
 
+  const fetchFollowedArtists = async (): Promise<Artist[]> => {
+    const artists: Artist[] = []
+    let after = ""
+    const limit = 50
+
+    while (true) {
+      const url = after
+        ? `https://api.spotify.com/v1/me/following?type=artist&limit=${limit}&after=${after}`
+        : `https://api.spotify.com/v1/me/following?type=artist&limit=${limit}`
+
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      const data = await response.json()
+
+      if (!data.artists || !data.artists.items || data.artists.items.length === 0) break
+
+      data.artists.items.forEach((artist: any) => {
+        artists.push({
+          id: artist.id,
+          name: artist.name,
+          genres: artist.genres || [],
+          followers: artist.followers?.total || 0,
+          popularity: artist.popularity || 0,
+          external_urls: artist.external_urls || { spotify: "" },
+        })
+      })
+
+      if (data.artists.items.length < limit) break
+      after = data.artists.cursors?.after
+      if (!after) break
+    }
+
+    return artists
+  }
+
+  const previewExport = async () => {
+    if (!accessToken) return
+
+    try {
+      setLoading(true)
+      setShowExportPreview(true)
+      setMessage("Analizando contenido para exportar...")
+      setProgress(0)
+
+      // Count liked songs
+      setCurrentExportItem("Contando canciones favoritas...")
+      const likedSongs = await fetchLikedSongs()
+      setProgress(20)
+
+      // Count playlist tracks
+      let totalTracks = likedSongs.length
+      setCurrentExportItem("Contando canciones en playlists...")
+      for (let i = 0; i < playlists.length; i++) {
+        const playlist = playlists[i]
+        totalTracks += playlist.tracks.total
+        setProgress(20 + ((i + 1) / playlists.length) * 40)
+      }
+
+      // Count followed artists
+      setCurrentExportItem("Contando artistas seguidos...")
+      const followedArtists = await fetchFollowedArtists()
+      setProgress(80)
+
+      // Get unique artists from tracks
+      setCurrentExportItem("Analizando artistas únicos...")
+      const uniqueArtists = new Set<string>()
+
+      // Add artists from liked songs
+      likedSongs.forEach((track) => {
+        track.artist.split(", ").forEach((artist) => uniqueArtists.add(artist.trim()))
+      })
+
+      // Add artists from playlists (estimate)
+      playlists.forEach((playlist) => {
+        // Estimate 2-3 unique artists per 5 tracks
+        const estimatedArtists = Math.floor(playlist.tracks.total * 0.5)
+        for (let i = 0; i < estimatedArtists; i++) {
+          uniqueArtists.add(`artist_${playlist.id}_${i}`)
+        }
+      })
+
+      setProgress(100)
+
+      const stats: ExportStats = {
+        playlists: playlists.length,
+        tracks: totalTracks,
+        artists: uniqueArtists.size,
+        likedSongs: likedSongs.length,
+        followedArtists: followedArtists.length,
+      }
+
+      setExportStats(stats)
+      setCurrentExportItem("Análisis completado")
+      setMessage("Vista previa de exportación lista")
+    } catch (error) {
+      setMessage("Error al analizar contenido")
+    } finally {
+      setLoading(false)
+      setProgress(0)
+    }
+  }
+
   const exportToCSV = async () => {
     if (!accessToken) return
 
     try {
       setLoading(true)
-      setMessage("Exportando playlists...")
+      setMessage("Exportando contenido...")
       setProgress(0)
 
       const allTracks: Track[] = []
+      const allArtists: Artist[] = []
+      const uniqueArtistNames = new Set<string>()
 
       // Export liked songs
-      setMessage("Exportando canciones favoritas...")
+      setCurrentExportItem("Exportando canciones favoritas...")
       const likedSongs = await fetchLikedSongs()
       allTracks.push(...likedSongs)
-      setProgress(20)
+
+      // Collect artists from liked songs
+      likedSongs.forEach((track) => {
+        track.artist.split(", ").forEach((artist) => uniqueArtistNames.add(artist.trim()))
+      })
+      setProgress(15)
 
       // Export playlists
       for (let i = 0; i < playlists.length; i++) {
         const playlist = playlists[i]
-        setMessage(`Exportando playlist: ${playlist.name}`)
+        setCurrentExportItem(`Exportando playlist: ${playlist.name}`)
         const tracks = await fetchPlaylistTracks(playlist.id, playlist.name)
         allTracks.push(...tracks)
-        setProgress(20 + ((i + 1) / playlists.length) * 80)
+
+        // Collect artists from playlist tracks
+        tracks.forEach((track) => {
+          track.artist.split(", ").forEach((artist) => uniqueArtistNames.add(artist.trim()))
+        })
+
+        setProgress(15 + ((i + 1) / playlists.length) * 60)
       }
 
-      // Create CSV content
-      const csvHeader = "Playlist,Song,Artist,Album,Duration (ms),Spotify ID,Added At\n"
-      const csvContent = allTracks
+      // Export followed artists
+      setCurrentExportItem("Exportando artistas seguidos...")
+      const followedArtists = await fetchFollowedArtists()
+      allArtists.push(...followedArtists)
+      setProgress(85)
+
+      // Create tracks CSV
+      setCurrentExportItem("Generando archivo de canciones...")
+      const tracksCSVHeader = "Playlist,Song,Artist,Album,Duration (ms),Spotify ID,Added At\n"
+      const tracksCSVContent = allTracks
         .map(
           (track) =>
             `"${track.playlist_name}","${track.name}","${track.artist}","${track.album}",${track.duration_ms},"${track.spotify_id}","${track.added_at}"`,
         )
         .join("\n")
 
-      // Download CSV
-      const blob = new Blob([csvHeader + csvContent], { type: "text/csv;charset=utf-8;" })
-      const link = document.createElement("a")
-      link.href = URL.createObjectURL(blob)
-      link.download = `spotify_playlists_${user?.display_name || "user"}_${new Date().toISOString().split("T")[0]}.csv`
-      link.click()
+      // Create artists CSV
+      setCurrentExportItem("Generando archivo de artistas...")
+      const artistsCSVHeader = "Artist Name,Genres,Followers,Popularity,Spotify URL,Source\n"
+      const artistsCSVContent = [
+        // Followed artists
+        ...followedArtists.map(
+          (artist) =>
+            `"${artist.name}","${artist.genres.join("; ")}",${artist.followers},${artist.popularity},"${artist.external_urls.spotify}","Followed"`,
+        ),
+        // Artists from tracks (unique names only)
+        ...Array.from(uniqueArtistNames).map((artistName) => `"${artistName}","","","","","From Tracks"`),
+      ].join("\n")
 
-      setMessage(`Exportación completada: ${allTracks.length} canciones exportadas`)
+      setProgress(95)
+
+      // Download tracks CSV
+      const tracksBlob = new Blob([tracksCSVHeader + tracksCSVContent], { type: "text/csv;charset=utf-8;" })
+      const tracksLink = document.createElement("a")
+      tracksLink.href = URL.createObjectURL(tracksBlob)
+      tracksLink.download = `spotify_tracks_${user?.display_name || "user"}_${new Date().toISOString().split("T")[0]}.csv`
+      tracksLink.click()
+
+      // Download artists CSV
+      const artistsBlob = new Blob([artistsCSVHeader + artistsCSVContent], { type: "text/csv;charset=utf-8;" })
+      const artistsLink = document.createElement("a")
+      artistsLink.href = URL.createObjectURL(artistsBlob)
+      artistsLink.download = `spotify_artists_${user?.display_name || "user"}_${new Date().toISOString().split("T")[0]}.csv`
+      artistsLink.click()
+
+      setProgress(100)
+      setCurrentExportItem("Exportación completada")
+      setMessage(
+        `Exportación completada: ${allTracks.length} canciones y ${followedArtists.length + uniqueArtistNames.size} artistas exportados`,
+      )
     } catch (error) {
       setMessage("Error durante la exportación")
     } finally {
       setLoading(false)
       setProgress(0)
+      setCurrentExportItem("")
     }
   }
 
@@ -435,6 +605,8 @@ export default function SpotifyPlaylistManager() {
     setUser(null)
     setPlaylists([])
     setMessage("")
+    setExportStats(null)
+    setShowExportPreview(false)
 
     // Clear stored data
     localStorage.removeItem("spotify_access_token")
@@ -500,7 +672,7 @@ export default function SpotifyPlaylistManager() {
         </Card>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center space-x-2">
@@ -536,22 +708,99 @@ export default function SpotifyPlaylistManager() {
               </div>
             </CardContent>
           </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-2">
+                <Users2 className="w-5 h-5 text-purple-500" />
+                <div>
+                  <p className="text-2xl font-bold">?</p>
+                  <p className="text-sm text-muted-foreground">Artistas seguidos</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Export Preview */}
+        {showExportPreview && exportStats && (
+          <Card className="border-blue-200 bg-blue-50">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Eye className="w-5 h-5" />
+                <span>Vista Previa de Exportación</span>
+              </CardTitle>
+              <CardDescription>Esto es lo que se exportará en los archivos CSV</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600">{exportStats.playlists}</p>
+                  <p className="text-sm text-muted-foreground">Playlists</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-blue-600">{exportStats.tracks}</p>
+                  <p className="text-sm text-muted-foreground">Canciones totales</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-red-600">{exportStats.likedSongs}</p>
+                  <p className="text-sm text-muted-foreground">Canciones favoritas</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-purple-600">{exportStats.followedArtists}</p>
+                  <p className="text-sm text-muted-foreground">Artistas seguidos</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-orange-600">{exportStats.artists}</p>
+                  <p className="text-sm text-muted-foreground">Artistas únicos</p>
+                </div>
+              </div>
+
+              <Alert className="border-green-200 bg-green-50 mb-4">
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription className="text-green-800">
+                  <strong>Se generarán 2 archivos:</strong>
+                  <br />• <strong>spotify_tracks_[usuario]_[fecha].csv</strong> - Todas las canciones con detalles
+                  <br />• <strong>spotify_artists_[usuario]_[fecha].csv</strong> - Artistas seguidos y únicos de las
+                  canciones
+                </AlertDescription>
+              </Alert>
+
+              <div className="flex space-x-2">
+                <Button onClick={exportToCSV} disabled={loading} className="bg-green-500 hover:bg-green-600">
+                  <Download className="w-4 h-4 mr-2" />
+                  Confirmar Exportación
+                </Button>
+                <Button onClick={() => setShowExportPreview(false)} variant="outline">
+                  Cancelar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Export Section */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Download className="w-5 h-5" />
-              <span>Exportar Playlists</span>
+              <span>Exportar Contenido</span>
             </CardTitle>
-            <CardDescription>Descarga todas tus playlists y canciones favoritas en formato CSV</CardDescription>
+            <CardDescription>
+              Descarga todas tus playlists, canciones favoritas y artistas en formato CSV
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Button onClick={exportToCSV} disabled={loading} className="w-full bg-green-500 hover:bg-green-600">
-              <Download className="w-4 h-4 mr-2" />
-              Exportar a CSV
-            </Button>
+          <CardContent className="space-y-4">
+            {!showExportPreview ? (
+              <Button onClick={previewExport} disabled={loading} className="w-full bg-blue-500 hover:bg-blue-600">
+                <Eye className="w-4 h-4 mr-2" />
+                Ver Qué Se Exportará
+              </Button>
+            ) : (
+              <Button onClick={exportToCSV} disabled={loading} className="w-full bg-green-500 hover:bg-green-600">
+                <Download className="w-4 h-4 mr-2" />
+                Exportar a CSV
+              </Button>
+            )}
           </CardContent>
         </Card>
 
@@ -591,7 +840,7 @@ export default function SpotifyPlaylistManager() {
             <CardContent className="p-6">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span>{message}</span>
+                  <span>{currentExportItem || message}</span>
                   <span>{Math.round(progress)}%</span>
                 </div>
                 <Progress value={progress} className="w-full" />
