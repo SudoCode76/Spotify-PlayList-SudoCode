@@ -403,49 +403,41 @@ export default function SpotifyPlaylistManager() {
       allArtists.push(...followedArtists)
       setProgress(85)
 
-      // Create tracks CSV
-      setCurrentExportItem("Generando archivo de canciones...")
-      const tracksCSVHeader = "Playlist,Song,Artist,Album,Duration (ms),Spotify ID,Added At\n"
-      const tracksCSVContent = allTracks
-        .map(
-          (track) =>
-            `"${track.playlist_name}","${track.name}","${track.artist}","${track.album}",${track.duration_ms},"${track.spotify_id}","${track.added_at}"`,
-        )
-        .join("\n")
+      // Create unified CSV with all data
+      setCurrentExportItem("Generando archivo unificado...")
+      const unifiedCSVHeader =
+        "Type,Playlist,Song,Artist,Album,Duration (ms),Spotify ID,Added At,Genres,Followers,Popularity,Spotify URL\n"
 
-      // Create artists CSV
-      setCurrentExportItem("Generando archivo de artistas...")
-      const artistsCSVHeader = "Artist Name,Genres,Followers,Popularity,Spotify URL,Source\n"
-      const artistsCSVContent = [
-        // Followed artists
+      const unifiedCSVContent = [
+        // Add all tracks
+        ...allTracks.map(
+          (track) =>
+            `"Track","${track.playlist_name}","${track.name}","${track.artist}","${track.album}",${track.duration_ms},"${track.spotify_id}","${track.added_at}","","","",""`,
+        ),
+        // Add followed artists
         ...followedArtists.map(
           (artist) =>
-            `"${artist.name}","${artist.genres.join("; ")}",${artist.followers},${artist.popularity},"${artist.external_urls.spotify}","Followed"`,
+            `"Followed Artist","","","${artist.name}","","","","","${artist.genres.join("; ")}",${artist.followers},${artist.popularity},"${artist.external_urls.spotify}"`,
         ),
-        // Artists from tracks (unique names only)
-        ...Array.from(uniqueArtistNames).map((artistName) => `"${artistName}","","","","","From Tracks"`),
+        // Add unique artists from tracks
+        ...Array.from(uniqueArtistNames)
+          .filter((artistName) => !followedArtists.some((fa) => fa.name === artistName)) // Avoid duplicates
+          .map((artistName) => `"Track Artist","","","${artistName}","","","","","","","",""`),
       ].join("\n")
 
       setProgress(95)
 
-      // Download tracks CSV
-      const tracksBlob = new Blob([tracksCSVHeader + tracksCSVContent], { type: "text/csv;charset=utf-8;" })
-      const tracksLink = document.createElement("a")
-      tracksLink.href = URL.createObjectURL(tracksBlob)
-      tracksLink.download = `spotify_tracks_${user?.display_name || "user"}_${new Date().toISOString().split("T")[0]}.csv`
-      tracksLink.click()
-
-      // Download artists CSV
-      const artistsBlob = new Blob([artistsCSVHeader + artistsCSVContent], { type: "text/csv;charset=utf-8;" })
-      const artistsLink = document.createElement("a")
-      artistsLink.href = URL.createObjectURL(artistsBlob)
-      artistsLink.download = `spotify_artists_${user?.display_name || "user"}_${new Date().toISOString().split("T")[0]}.csv`
-      artistsLink.click()
+      // Download unified CSV
+      const unifiedBlob = new Blob([unifiedCSVHeader + unifiedCSVContent], { type: "text/csv;charset=utf-8;" })
+      const unifiedLink = document.createElement("a")
+      unifiedLink.href = URL.createObjectURL(unifiedBlob)
+      unifiedLink.download = `spotify_complete_export_${user?.display_name || "user"}_${new Date().toISOString().split("T")[0]}.csv`
+      unifiedLink.click()
 
       setProgress(100)
       setCurrentExportItem("Exportación completada")
       setMessage(
-        `Exportación completada: ${allTracks.length} canciones y ${followedArtists.length + uniqueArtistNames.size} artistas exportados`,
+        `Exportación completada: ${allTracks.length} canciones y ${followedArtists.length + uniqueArtistNames.size} artistas exportados en un solo archivo`,
       )
     } catch (error) {
       setMessage("Error durante la exportación")
@@ -758,10 +750,10 @@ export default function SpotifyPlaylistManager() {
               <Alert className="border-green-200 bg-green-50 mb-4">
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription className="text-green-800">
-                  <strong>Se generarán 2 archivos:</strong>
-                  <br />• <strong>spotify_tracks_[usuario]_[fecha].csv</strong> - Todas las canciones con detalles
-                  <br />• <strong>spotify_artists_[usuario]_[fecha].csv</strong> - Artistas seguidos y únicos de las
-                  canciones
+                  <strong>Se generará 1 archivo unificado:</strong>
+                  <br />• <strong>spotify_complete_export_[usuario]_[fecha].csv</strong> - Todas las canciones y
+                  artistas en un solo archivo
+                  <br />• Columna "Type" indica si es "Track", "Followed Artist" o "Track Artist"
                 </AlertDescription>
               </Alert>
 
