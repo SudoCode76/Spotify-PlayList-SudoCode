@@ -3,8 +3,21 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Github, Linkedin, MessageCircle, Code, User, Mail, ExternalLink, Heart, Coffee, Music } from "lucide-react"
+import {
+  Github,
+  Linkedin,
+  MessageCircle,
+  Code,
+  User,
+  Mail,
+  ExternalLink,
+  Heart,
+  Coffee,
+  Music,
+  Users,
+} from "lucide-react"
 import { Navbar } from "@/components/navbar"
+import Link from "next/link"
 
 export default function AboutPage() {
   const openLink = (url: string) => {
@@ -130,6 +143,19 @@ export default function AboutPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Botón de Acceso Público */}
+              <div className="mb-6">
+                <Link href="/public-access">
+                  <Button className="w-full bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white shadow-lg">
+                    <Users className="w-4 h-4 mr-2" />
+                    Configurar Acceso Público
+                  </Button>
+                </Link>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 text-center">
+                  Aprende cómo hacer que tu aplicación funcione para cualquier usuario
+                </p>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* LinkedIn */}
                 <Button

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Users, Settings, FileText, Home, HelpCircle, User } from "lucide-react"
+import { Menu, X, Settings, FileText, Home, HelpCircle, User } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useTheme } from "next-themes"
 import Link from "next/link"
@@ -68,12 +68,6 @@ export function Navbar() {
                 Inicio
               </Button>
             </Link>
-            <Link href="/public-access">
-              <Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-accent/50">
-                <Users className="w-4 h-4 mr-2" />
-                Acceso Público
-              </Button>
-            </Link>
             <Link href="/request-extension">
               <Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-accent/50">
                 <Settings className="w-4 h-4 mr-2" />
@@ -123,15 +117,6 @@ export function Navbar() {
                 >
                   <Home className="w-4 h-4 mr-2" />
                   Inicio
-                </Button>
-              </Link>
-              <Link href="/public-access" onClick={closeMenu}>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-accent/50"
-                >
-                  <Users className="w-4 h-4 mr-2" />
-                  Acceso Público
                 </Button>
               </Link>
               <Link href="/request-extension" onClick={closeMenu}>
