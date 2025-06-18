@@ -86,9 +86,16 @@ export default function SpotifyPlaylistManager() {
   const loginToSpotify = () => {
     const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || "your_client_id"
 
+    console.log("=== SPOTIFY LOGIN DEBUG ===")
+    console.log("Client ID:", clientId)
+    console.log("Current location:", window.location.href)
+
     // Use 127.0.0.1 instead of localhost as per new Spotify requirements
     const currentHost = window.location.hostname
     const currentPort = window.location.port
+
+    console.log("Current host:", currentHost)
+    console.log("Current port:", currentPort)
 
     // Determine the correct redirect URI based on environment
     let redirectUri: string
@@ -100,6 +107,8 @@ export default function SpotifyPlaylistManager() {
       redirectUri = `${window.location.origin}/callback`
     }
 
+    console.log("Redirect URI:", redirectUri)
+
     const encodedRedirectUri = encodeURIComponent(redirectUri)
     const scopes = encodeURIComponent(
       "user-read-private user-read-email playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify",
@@ -107,9 +116,16 @@ export default function SpotifyPlaylistManager() {
 
     const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodedRedirectUri}&scope=${scopes}`
 
-    // Debug: Show the URL in console for verification
-    console.log("Auth URL:", authUrl)
-    console.log("Redirect URI:", redirectUri)
+    console.log("=== SPOTIFY AUTH URL ===")
+    console.log("Full URL:", authUrl)
+    console.log("Encoded Redirect URI:", encodedRedirectUri)
+    console.log("========================")
+
+    // Validate client ID before redirecting
+    if (!clientId || clientId === "your_client_id") {
+      alert("Error: Client ID no configurado. Revisa tu archivo .env.local")
+      return
+    }
 
     window.location.href = authUrl
   }

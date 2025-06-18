@@ -15,35 +15,67 @@ export default function SpotifyCallback() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
+        console.log("Callback started")
+        console.log("Current URL:", window.location.href)
+        console.log("Hash:", window.location.hash)
+
         // Get the hash from URL
         const hash = window.location.hash.substring(1)
+        console.log("Parsed hash:", hash)
+
+        if (!hash) {
+          console.log("No hash found in URL")
+          setStatus("error")
+          setMessage("No se encontraron parámetros de autenticación en la URL")
+          return
+        }
+
         const params = new URLSearchParams(hash)
+        console.log("Parsed params:", Object.fromEntries(params))
 
         const accessToken = params.get("access_token")
         const error = params.get("error")
         const errorDescription = params.get("error_description")
 
+        console.log("Access token:", accessToken ? "Present" : "Missing")
+        console.log("Error:", error)
+        console.log("Error description:", errorDescription)
+
         if (error) {
+          console.log("OAuth error detected:", error, errorDescription)
           setStatus("error")
           setMessage(errorDescription || "Error de autenticación con Spotify")
           return
         }
 
         if (!accessToken) {
+          console.log("No access token found")
           setStatus("error")
           setMessage("No se recibió el token de acceso")
           return
         }
 
-        // Validate token by fetching user profile
+        console.log("Validating token with Spotify API...")
+
+        // Validate token by fetching user profile with timeout
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+
         const response = await fetch("https://api.spotify.com/v1/me", {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
+          signal: controller.signal,
         })
 
+        clearTimeout(timeoutId)
+
+        console.log("Spotify API response status:", response.status)
+
         if (!response.ok) {
-          throw new Error("Token inválido")
+          const errorText = await response.text()
+          console.log("Spotify API error:", errorText)
+          throw new Error(`Token inválido: ${response.status}`)
         }
 
         const userData = await response.json()
@@ -61,9 +93,13 @@ export default function SpotifyCallback() {
           router.push("/")
         }, 2000)
       } catch (error) {
+        console.error("Callback error details:", error)
         setStatus("error")
-        setMessage("Error al procesar la autenticación")
-        console.error("Callback error:", error)
+        if (error.name === "AbortError") {
+          setMessage("Timeout al validar con Spotify. Intenta de nuevo.")
+        } else {
+          setMessage(`Error al procesar la autenticación: ${error.message}`)
+        }
       }
     }
 
