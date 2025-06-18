@@ -102,7 +102,7 @@ La aplicación mejora la experiencia del usuario al permitir hacer respaldos de 
               <div className="space-y-4">
                 <div>
                   <h4 className="font-medium mb-2">📝 Descripción de la aplicación:</h4>
-                  <div className="bg-gray-100 p-4 rounded border text-sm">
+                  <div className="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 p-4 rounded border border-slate-200 dark:border-slate-700 text-sm">
                     <pre className="whitespace-pre-wrap">{appDescription}</pre>
                   </div>
                   <Button
@@ -119,25 +119,27 @@ La aplicación mejora la experiencia del usuario al permitir hacer respaldos de 
                 <div>
                   <h4 className="font-medium mb-2">🎯 Respuestas sugeridas para preguntas comunes:</h4>
                   <div className="space-y-3">
-                    <div className="bg-blue-50 p-3 rounded">
-                      <p className="font-medium">¿Es comercial tu aplicación?</p>
-                      <p className="text-sm">No, es una herramienta gratuita sin fines de lucro</p>
+                    <div className="bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 p-3 rounded">
+                      <p className="font-medium text-blue-900 dark:text-blue-100">¿Es comercial tu aplicación?</p>
+                      <p className="text-sm text-blue-800 dark:text-blue-200">
+                        No, es una herramienta gratuita sin fines de lucro
+                      </p>
                     </div>
-                    <div className="bg-blue-50 p-3 rounded">
-                      <p className="font-medium">¿Qué datos recopilas?</p>
-                      <p className="text-sm">
+                    <div className="bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 p-3 rounded">
+                      <p className="font-medium text-blue-900 dark:text-blue-100">¿Qué datos recopilas?</p>
+                      <p className="text-sm text-blue-800 dark:text-blue-200">
                         Solo información de playlists y perfil básico. No almacenamos datos en servidores.
                       </p>
                     </div>
-                    <div className="bg-blue-50 p-3 rounded">
-                      <p className="font-medium">¿Cuántos usuarios esperás?</p>
-                      <p className="text-sm">
+                    <div className="bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 p-3 rounded">
+                      <p className="font-medium text-blue-900 dark:text-blue-100">¿Cuántos usuarios esperás?</p>
+                      <p className="text-sm text-blue-800 dark:text-blue-200">
                         Inicialmente 100-500 usuarios, principalmente para uso personal y familiar
                       </p>
                     </div>
-                    <div className="bg-blue-50 p-3 rounded">
-                      <p className="font-medium">¿Cómo usas la API de Spotify?</p>
-                      <p className="text-sm">
+                    <div className="bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 p-3 rounded">
+                      <p className="font-medium text-blue-900 dark:text-blue-100">¿Cómo usas la API de Spotify?</p>
+                      <p className="text-sm text-blue-800 dark:text-blue-200">
                         Para leer playlists, canciones favoritas, crear playlists y buscar canciones. Todo procesado
                         localmente.
                       </p>
@@ -205,7 +207,7 @@ La aplicación mejora la experiencia del usuario al permitir hacer respaldos de 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <p className="font-medium">🔧 Scopes utilizados:</p>
-                  <div className="text-sm bg-gray-100 p-2 rounded">
+                  <div className="text-sm bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 p-2 rounded border border-slate-200 dark:border-slate-700">
                     <code>
                       user-read-private
                       <br />

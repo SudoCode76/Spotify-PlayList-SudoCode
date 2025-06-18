@@ -113,9 +113,11 @@ export default function DebugPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Alert>
+              <Alert className="border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
                 <AlertDescription>
-                  <div className="font-mono text-sm bg-gray-100 p-2 rounded border">{redirectUri}</div>
+                  <div className="font-mono text-sm bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 p-2 rounded border border-slate-200 dark:border-slate-700">
+                    {redirectUri}
+                  </div>
                 </AlertDescription>
               </Alert>
               <Button
