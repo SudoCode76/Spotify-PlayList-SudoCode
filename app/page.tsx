@@ -42,7 +42,6 @@ export default function SpotifyPlaylistManager() {
   const [message, setMessage] = useState("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
-  // Update the useEffect to check localStorage first
   useEffect(() => {
     // Check for stored token first
     const storedToken = localStorage.getItem("spotify_access_token")
@@ -83,19 +82,38 @@ export default function SpotifyPlaylistManager() {
     }
   }, [])
 
-  // Update the loginToSpotify function to use the callback route
+  // Updated loginToSpotify function to use 127.0.0.1 instead of localhost
   const loginToSpotify = () => {
     const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || "your_client_id"
-    const redirectUri = encodeURIComponent(`${window.location.origin}/callback`)
+
+    // Use 127.0.0.1 instead of localhost as per new Spotify requirements
+    const currentHost = window.location.hostname
+    const currentPort = window.location.port
+
+    // Determine the correct redirect URI based on environment
+    let redirectUri: string
+    if (currentHost === "localhost" || currentHost === "127.0.0.1") {
+      // For local development, use 127.0.0.1
+      redirectUri = `http://127.0.0.1:${currentPort || "3000"}/callback`
+    } else {
+      // For production, use the current origin
+      redirectUri = `${window.location.origin}/callback`
+    }
+
+    const encodedRedirectUri = encodeURIComponent(redirectUri)
     const scopes = encodeURIComponent(
       "user-read-private user-read-email playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify",
     )
 
-    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=${scopes}`
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodedRedirectUri}&scope=${scopes}`
+
+    // Debug: Show the URL in console for verification
+    console.log("Auth URL:", authUrl)
+    console.log("Redirect URI:", redirectUri)
+
     window.location.href = authUrl
   }
 
-  // Update fetchUserProfile to store data in localStorage
   const fetchUserProfile = async (token: string) => {
     try {
       const response = await fetch("https://api.spotify.com/v1/me", {
@@ -392,7 +410,6 @@ export default function SpotifyPlaylistManager() {
     }
   }
 
-  // Update the logout function to clear localStorage
   const logout = () => {
     setAccessToken(null)
     setUser(null)
