@@ -673,13 +673,13 @@ export default function SpotifyPlaylistManager() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-slate-900 dark:via-slate-800 dark:to-emerald-900">
       <Navbar />
-      <div className="max-w-4xl mx-auto p-4 space-y-6">
+      <div className="max-w-4xl mx-auto p-3 sm:p-4 space-y-4 sm:space-y-6">
         {/* Header */}
         <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 relative">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 relative">
                   {mounted ? (
                     <Image
                       src={theme === "dark" ? "/logo-dark.png" : "/logo-light.png"}
@@ -701,7 +701,7 @@ export default function SpotifyPlaylistManager() {
                   )}
                 </div>
                 <div>
-                  <CardTitle className="text-2xl bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
+                  <CardTitle className="text-xl sm:text-2xl bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
                     Spotify Playlist SudoCode
                   </CardTitle>
                   <CardDescription className="flex items-center space-x-2 text-slate-600 dark:text-slate-300">
@@ -732,49 +732,49 @@ export default function SpotifyPlaylistManager() {
         </Card>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-teal-500 text-white">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center space-x-2">
-                <List className="w-5 h-5" />
+                <List className="w-4 h-4 sm:w-5 sm:h-5" />
                 <div>
-                  <p className="text-2xl font-bold">{playlists.length}</p>
-                  <p className="text-sm text-emerald-100">Playlists</p>
+                  <p className="text-xl sm:text-2xl font-bold">{playlists.length}</p>
+                  <p className="text-xs sm:text-sm text-emerald-100">Playlists</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           <Card className="border-0 shadow-lg bg-gradient-to-br from-rose-500 to-pink-500 text-white">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center space-x-2">
-                <Heart className="w-5 h-5" />
+                <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
                 <div>
-                  <p className="text-2xl font-bold">♥</p>
-                  <p className="text-sm text-rose-100">Canciones favoritas</p>
+                  <p className="text-xl sm:text-2xl font-bold">♥</p>
+                  <p className="text-xs sm:text-sm text-rose-100">Canciones favoritas</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-indigo-500 text-white">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center space-x-2">
-                <Music className="w-5 h-5" />
+                <Music className="w-4 h-4 sm:w-5 sm:h-5" />
                 <div>
-                  <p className="text-2xl font-bold">
+                  <p className="text-xl sm:text-2xl font-bold">
                     {playlists.reduce((total, playlist) => total + playlist.tracks.total, 0)}
                   </p>
-                  <p className="text-sm text-blue-100">Total canciones</p>
+                  <p className="text-xs sm:text-sm text-blue-100">Total canciones</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-violet-500 text-white">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center space-x-2">
-                <Users2 className="w-5 h-5" />
+                <Users2 className="w-4 h-4 sm:w-5 sm:h-5" />
                 <div>
-                  <p className="text-2xl font-bold">?</p>
-                  <p className="text-sm text-purple-100">Artistas seguidos</p>
+                  <p className="text-xl sm:text-2xl font-bold">?</p>
+                  <p className="text-xs sm:text-sm text-purple-100">Artistas seguidos</p>
                 </div>
               </div>
             </CardContent>
@@ -794,7 +794,7 @@ export default function SpotifyPlaylistManager() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-4">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{exportStats.playlists}</p>
                   <p className="text-sm text-slate-600 dark:text-slate-400">Playlists</p>
@@ -829,7 +829,7 @@ export default function SpotifyPlaylistManager() {
                 </AlertDescription>
               </Alert>
 
-              <div className="flex space-x-2">
+              <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2 sm:gap-0">
                 <Button
                   onClick={exportToCSV}
                   disabled={loading}

@@ -48,14 +48,14 @@ export default function DebugPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-blue-900/20 dark:to-indigo-900/20">
       <Navbar />
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-2xl">
         <div className="space-y-6">
           <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-xl sm:text-2xl text-slate-800 dark:text-slate-200">
+              <CardTitle className="text-lg sm:text-xl lg:text-2xl text-slate-800 dark:text-slate-200">
                 🔧 Debug de Configuración (2025)
               </CardTitle>
-              <CardDescription className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
+              <CardDescription className="text-xs sm:text-sm lg:text-base text-slate-600 dark:text-slate-400">
                 Diagnóstico actualizado según las nuevas reglas de Spotify
               </CardDescription>
             </CardHeader>
@@ -68,10 +68,10 @@ export default function DebugPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 border rounded">
-                  <div>
-                    <p className="font-medium text-slate-700 dark:text-slate-300">URL actual:</p>
-                    <code className="text-sm">{currentOrigin}</code>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 border rounded gap-2">
+                  <div className="flex-1">
+                    <p className="font-medium text-slate-700 dark:text-slate-300 text-sm sm:text-base">URL actual:</p>
+                    <code className="text-xs sm:text-sm break-all">{currentOrigin}</code>
                   </div>
                   <div>
                     {isCorrectIP ? (
@@ -182,8 +182,8 @@ export default function DebugPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
-                <div className="flex items-start space-x-3">
-                  <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
+                <div className="flex items-start space-x-2 sm:space-x-3">
+                  <div className="bg-blue-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs sm:text-sm font-bold flex-shrink-0">
                     1
                   </div>
                   <div className="flex-1 text-slate-700 dark:text-slate-300">
@@ -200,14 +200,14 @@ export default function DebugPage() {
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-3">
-                  <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
+                <div className="flex items-start space-x-2 sm:space-x-3">
+                  <div className="bg-blue-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs sm:text-sm font-bold flex-shrink-0">
                     2
                   </div>
                   <div className="flex-1 text-slate-700 dark:text-slate-300">
                     <p className="font-medium">Agrega esta Redirect URI:</p>
-                    <div className="bg-gray-100 p-2 rounded mt-1">
-                      <code className="text-sm">{redirectUri}</code>
+                    <div className="bg-gray-100 dark:bg-gray-800 p-2 sm:p-3 rounded mt-1 overflow-x-auto">
+                      <code className="text-xs sm:text-sm break-all">{redirectUri}</code>
                       <Button
                         size="sm"
                         variant="ghost"
@@ -220,8 +220,8 @@ export default function DebugPage() {
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-3">
-                  <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
+                <div className="flex items-start space-x-2 sm:space-x-3">
+                  <div className="bg-blue-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs sm:text-sm font-bold flex-shrink-0">
                     3
                   </div>
                   <div className="flex-1 text-slate-700 dark:text-slate-300">
@@ -231,8 +231,8 @@ export default function DebugPage() {
                 </div>
 
                 {isLocalhost && (
-                  <div className="flex items-start space-x-3">
-                    <div className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
+                  <div className="flex items-start space-x-2 sm:space-x-3">
+                    <div className="bg-orange-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs sm:text-sm font-bold flex-shrink-0">
                       4
                     </div>
                     <div className="flex-1 text-slate-700 dark:text-slate-300">
@@ -258,11 +258,11 @@ export default function DebugPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="grid grid-cols-1 gap-3">
-                <div className="p-3 border rounded bg-red-50 border-red-200">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-red-800">❌ Ya NO funciona (2025):</p>
-                      <code className="text-sm">http://localhost:3000/callback</code>
+                <div className="p-2 sm:p-3 border rounded bg-red-50 border-red-200">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <div className="flex-1">
+                      <p className="font-medium text-red-800 text-sm sm:text-base">❌ Ya NO funciona (2025):</p>
+                      <code className="text-xs sm:text-sm break-all">http://localhost:3000/callback</code>
                     </div>
                     <XCircle className="w-5 h-5 text-red-500" />
                   </div>

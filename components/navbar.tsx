@@ -31,7 +31,7 @@ export function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3" onClick={closeMenu}>
-            <div className="relative w-8 h-8 flex-shrink-0">
+            <div className="relative w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0">
               {mounted ? (
                 <Image
                   src={theme === "dark" ? "/logo-dark.png" : "/logo-light.png"}
@@ -52,10 +52,10 @@ export function Navbar() {
                 />
               )}
             </div>
-            <span className="font-bold text-lg bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent hidden sm:block">
+            <span className="font-bold text-base sm:text-lg bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent hidden md:block">
               Playlist Spotify SudoCode
             </span>
-            <span className="font-bold text-lg bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent sm:hidden">
+            <span className="font-bold text-base sm:text-lg bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent md:hidden">
               SC
             </span>
           </Link>
@@ -63,33 +63,53 @@ export function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
             <Link href="/">
-              <Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-accent/50">
-                <Home className="w-4 h-4 mr-2" />
-                Inicio
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-foreground/80 hover:text-foreground hover:bg-accent/50 text-sm"
+              >
+                <Home className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Inicio</span>
               </Button>
             </Link>
             <Link href="/request-extension">
-              <Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-accent/50">
-                <Settings className="w-4 h-4 mr-2" />
-                Configuración
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-foreground/80 hover:text-foreground hover:bg-accent/50 text-sm"
+              >
+                <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Configuración</span>
               </Button>
             </Link>
             <Link href="/privacy">
-              <Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-accent/50">
-                <FileText className="w-4 h-4 mr-2" />
-                Privacidad
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-foreground/80 hover:text-foreground hover:bg-accent/50 text-sm"
+              >
+                <FileText className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Privacidad</span>
               </Button>
             </Link>
             <Link href="/debug">
-              <Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-accent/50">
-                <HelpCircle className="w-4 h-4 mr-2" />
-                Debug
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-foreground/80 hover:text-foreground hover:bg-accent/50 text-sm"
+              >
+                <HelpCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Debug</span>
               </Button>
             </Link>
             <Link href="/about">
-              <Button variant="ghost" size="sm" className="text-foreground/80 hover:text-foreground hover:bg-accent/50">
-                <User className="w-4 h-4 mr-2" />
-                Acerca de
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-foreground/80 hover:text-foreground hover:bg-accent/50 text-sm"
+              >
+                <User className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Acerca de</span>
               </Button>
             </Link>
             <div className="ml-2">
@@ -113,7 +133,7 @@ export function Navbar() {
               <Link href="/" onClick={closeMenu}>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-accent/50"
+                  className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-accent/50 text-sm py-2"
                 >
                   <Home className="w-4 h-4 mr-2" />
                   Inicio
@@ -122,7 +142,7 @@ export function Navbar() {
               <Link href="/request-extension" onClick={closeMenu}>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-accent/50"
+                  className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-accent/50 text-sm py-2"
                 >
                   <Settings className="w-4 h-4 mr-2" />
                   Configuración
@@ -131,7 +151,7 @@ export function Navbar() {
               <Link href="/privacy" onClick={closeMenu}>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-accent/50"
+                  className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-accent/50 text-sm py-2"
                 >
                   <FileText className="w-4 h-4 mr-2" />
                   Privacidad
@@ -140,7 +160,7 @@ export function Navbar() {
               <Link href="/debug" onClick={closeMenu}>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-accent/50"
+                  className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-accent/50 text-sm py-2"
                 >
                   <HelpCircle className="w-4 h-4 mr-2" />
                   Debug
@@ -149,7 +169,7 @@ export function Navbar() {
               <Link href="/about" onClick={closeMenu}>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-accent/50"
+                  className="w-full justify-start text-foreground/80 hover:text-foreground hover:bg-accent/50 text-sm py-2"
                 >
                   <User className="w-4 h-4 mr-2" />
                   Acerca de
