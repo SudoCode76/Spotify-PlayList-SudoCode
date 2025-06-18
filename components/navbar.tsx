@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Music, Menu, X, Users, Settings, FileText, Home, HelpCircle } from "lucide-react"
+import { ThemeToggle } from "@/components/theme-toggle"
 import Link from "next/link"
 
 export function Navbar() {
@@ -17,7 +18,7 @@ export function Navbar() {
   }
 
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <nav className="bg-background border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -25,8 +26,8 @@ export function Navbar() {
             <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
               <Music className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-lg text-gray-900 hidden sm:block">Spotify Manager</span>
-            <span className="font-bold text-lg text-gray-900 sm:hidden">SM</span>
+            <span className="font-bold text-lg text-foreground hidden sm:block">Spotify Manager</span>
+            <span className="font-bold text-lg text-foreground sm:hidden">SM</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -61,10 +62,12 @@ export function Navbar() {
                 Debug
               </Button>
             </Link>
+            <ThemeToggle />
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
+          {/* Mobile menu button and theme toggle */}
+          <div className="md:hidden flex items-center space-x-2">
+            <ThemeToggle />
             <Button variant="ghost" size="sm" onClick={toggleMenu}>
               {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
@@ -74,7 +77,7 @@ export function Navbar() {
         {/* Mobile Navigation */}
         {isOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
+            <div className="px-2 pt-2 pb-3 space-y-1 bg-background border-t border-border">
               <Link href="/" onClick={closeMenu}>
                 <Button variant="ghost" className="w-full justify-start">
                   <Home className="w-4 h-4 mr-2" />
