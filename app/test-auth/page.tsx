@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Copy, RefreshCw } from "lucide-react"
+import { Copy, RefreshCw, ExternalLink } from "lucide-react"
 
 export default function TestAuth() {
   const [logs, setLogs] = useState<string[]>([])
@@ -107,6 +107,40 @@ export default function TestAuth() {
     }
   }
 
+  const testFullAuthFlow = () => {
+    addLog("🚀 Iniciando test completo de autenticación...")
+
+    const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID
+    const currentHost = window.location.hostname
+    const currentPort = window.location.port
+
+    if (!clientId || clientId === "your_client_id") {
+      addLog("❌ ERROR: Client ID no configurado")
+      return
+    }
+
+    if (currentHost === "localhost") {
+      addLog("❌ ERROR: Debes usar 127.0.0.1")
+      return
+    }
+
+    // Generate the exact same URL as the main app
+    const redirectUri = `http://127.0.0.1:${currentPort || "3000"}/callback`
+    const encodedRedirectUri = encodeURIComponent(redirectUri)
+    const scopes = encodeURIComponent(
+      "user-read-private user-read-email playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify",
+    )
+
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodedRedirectUri}&scope=${scopes}`
+
+    addLog(`🔗 Redirigiendo a Spotify...`)
+    addLog(`📍 Redirect URI: ${redirectUri}`)
+    addLog(`🆔 Client ID: ${clientId}`)
+
+    // Open in same window to test the full flow
+    window.location.href = authUrl
+  }
+
   const proceedToAuth = () => {
     const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID
     const currentHost = window.location.hostname
@@ -132,6 +166,23 @@ export default function TestAuth() {
     alert("Logs copiados al portapapeles")
   }
 
+  const openSpotifyDashboard = () => {
+    window.open("https://developer.spotify.com/dashboard", "_blank")
+  }
+
+  const checkSpotifySettings = () => {
+    addLog("🔍 Verificando configuración de Spotify Dashboard...")
+
+    const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID
+    const redirectUri = `http://127.0.0.1:3000/callback`
+
+    addLog(`📋 Tu Client ID: ${clientId}`)
+    addLog(`📍 Redirect URI que debe estar en Spotify: ${redirectUri}`)
+    addLog(`🌐 Ve a: https://developer.spotify.com/dashboard`)
+    addLog(`📝 En tu app → Settings → Redirect URIs`)
+    addLog(`✅ Debe contener exactamente: ${redirectUri}`)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100 p-4">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -147,7 +198,7 @@ export default function TestAuth() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>🔧 Controles de Test</CardTitle>
+              <CardTitle>🔧 Tests de Configuración</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <Button onClick={testSpotifyAuth} disabled={testing} className="w-full bg-blue-500 hover:bg-blue-600">
@@ -159,40 +210,37 @@ export default function TestAuth() {
                 🔗 Test Conexión API
               </Button>
 
-              <Button onClick={clearLogs} variant="outline" className="w-full">
-                🗑️ Limpiar Logs
+              <Button onClick={checkSpotifySettings} variant="outline" className="w-full">
+                🔍 Verificar Settings Spotify
               </Button>
 
-              <Button onClick={copyLogs} variant="outline" className="w-full" disabled={logs.length === 0}>
-                <Copy className="w-4 h-4 mr-2" />
-                Copiar Logs
+              <Button onClick={clearLogs} variant="outline" className="w-full">
+                🗑️ Limpiar Logs
               </Button>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>⚡ Acciones Rápidas</CardTitle>
+              <CardTitle>🚀 Tests de Autenticación</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button onClick={proceedToAuth} className="w-full bg-green-500 hover:bg-green-600">
-                🚀 Proceder a Autenticación
+              <Button onClick={testFullAuthFlow} className="w-full bg-green-500 hover:bg-green-600">
+                🧪 Test Flujo Completo
               </Button>
 
-              <Button
-                onClick={() => window.open("http://127.0.0.1:3000", "_blank")}
-                variant="outline"
-                className="w-full"
-              >
-                🌐 Abrir en 127.0.0.1
+              <Button onClick={proceedToAuth} className="w-full bg-green-600 hover:bg-green-700">
+                🚀 Ir a App Principal
               </Button>
 
-              <Button onClick={() => window.open("/debug", "_blank")} variant="outline" className="w-full">
-                🔧 Ver Debug Completo
+              <Button onClick={openSpotifyDashboard} variant="outline" className="w-full">
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Abrir Spotify Dashboard
               </Button>
 
-              <Button onClick={() => window.open("/setup-guide", "_blank")} variant="outline" className="w-full">
-                📖 Ver Guía de Setup
+              <Button onClick={copyLogs} variant="outline" className="w-full" disabled={logs.length === 0}>
+                <Copy className="w-4 h-4 mr-2" />
+                Copiar Logs
               </Button>
             </CardContent>
           </Card>
@@ -222,8 +270,8 @@ export default function TestAuth() {
 
         <Alert>
           <AlertDescription>
-            <strong>💡 Consejo:</strong> Si encuentras errores, usa esta información para configurar correctamente tu
-            aplicación de Spotify. Los logs te ayudarán a identificar exactamente qué está fallando.
+            <strong>💡 Siguiente paso:</strong> Haz clic en "Test Flujo Completo" para probar la autenticación real con
+            Spotify. Esto te llevará directamente al proceso de OAuth.
           </AlertDescription>
         </Alert>
       </div>
