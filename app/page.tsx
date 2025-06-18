@@ -14,6 +14,7 @@ interface SpotifyUser {
   id: string
   display_name: string
   images: { url: string }[]
+  email?: string
 }
 
 interface Playlist {
@@ -82,7 +83,7 @@ export default function SpotifyPlaylistManager() {
     }
   }, [])
 
-  // Updated loginToSpotify function to use Authorization Code Flow instead of Implicit Flow
+  // Updated loginToSpotify function to use Authorization Code Flow
   const loginToSpotify = () => {
     const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || "your_client_id"
 
@@ -114,15 +115,15 @@ export default function SpotifyPlaylistManager() {
       "user-read-private user-read-email playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify",
     )
 
-    // FIXED: Use response_type=code instead of response_type=token
-    // This uses Authorization Code Flow instead of Implicit Flow
+    // Use Authorization Code Flow with show_dialog=true for better UX
     const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodedRedirectUri}&scope=${scopes}&show_dialog=true`
 
-    console.log("=== SPOTIFY AUTH URL (FIXED) ===")
+    console.log("=== SPOTIFY AUTH URL ===")
     console.log("Full URL:", authUrl)
     console.log("Response Type: code (Authorization Code Flow)")
     console.log("Encoded Redirect URI:", encodedRedirectUri)
-    console.log("================================")
+    console.log("Show Dialog: true (forces login screen)")
+    console.log("========================")
 
     // Validate client ID before redirecting
     if (!clientId || clientId === "your_client_id") {
@@ -273,7 +274,7 @@ export default function SpotifyPlaylistManager() {
       const blob = new Blob([csvHeader + csvContent], { type: "text/csv;charset=utf-8;" })
       const link = document.createElement("a")
       link.href = URL.createObjectURL(blob)
-      link.download = `spotify_playlists_${new Date().toISOString().split("T")[0]}.csv`
+      link.download = `spotify_playlists_${user?.display_name || "user"}_${new Date().toISOString().split("T")[0]}.csv`
       link.click()
 
       setMessage(`Exportación completada: ${allTracks.length} canciones exportadas`)
@@ -312,7 +313,7 @@ export default function SpotifyPlaylistManager() {
         },
         body: JSON.stringify({
           name: name,
-          description: "Imported from CSV",
+          description: "Imported from CSV via Spotify Playlist Manager",
           public: false,
         }),
       })
@@ -444,21 +445,23 @@ export default function SpotifyPlaylistManager() {
   if (!accessToken) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mb-4">
-              <Music className="w-6 h-6 text-white" />
-            </div>
-            <CardTitle className="text-2xl">Spotify Playlist Manager</CardTitle>
-            <CardDescription>Exporta e importa tus playlists de Spotify con archivos CSV</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={loginToSpotify} className="w-full bg-green-500 hover:bg-green-600">
-              <Music className="w-4 h-4 mr-2" />
-              Conectar con Spotify
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="w-full max-w-2xl space-y-6">
+          <Card className="w-full max-w-md mx-auto">
+            <CardHeader className="text-center">
+              <div className="mx-auto w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mb-4">
+                <Music className="w-6 h-6 text-white" />
+              </div>
+              <CardTitle className="text-2xl">Spotify Playlist Manager</CardTitle>
+              <CardDescription>Exporta e importa tus playlists de Spotify con archivos CSV</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={loginToSpotify} className="w-full bg-green-500 hover:bg-green-600">
+                <Music className="w-4 h-4 mr-2" />
+                Conectar con Spotify
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }
@@ -479,6 +482,12 @@ export default function SpotifyPlaylistManager() {
                   <CardDescription className="flex items-center space-x-2">
                     <User className="w-4 h-4" />
                     <span>Conectado como {user?.display_name}</span>
+                    {user?.email && (
+                      <>
+                        <span>•</span>
+                        <span className="text-xs">{user.email}</span>
+                      </>
+                    )}
                   </CardDescription>
                 </div>
               </div>

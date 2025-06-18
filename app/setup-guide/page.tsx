@@ -3,7 +3,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Copy, ExternalLink, CheckCircle, AlertTriangle, Info } from "lucide-react"
+import { Copy, ExternalLink, CheckCircle, AlertTriangle, Info, Users } from "lucide-react"
+import { Navbar } from "@/components/navbar"
 
 export default function SetupGuide() {
   const copyToClipboard = (text: string) => {
@@ -16,96 +17,157 @@ export default function SetupGuide() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 p-4">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl">🚀 Guía de Configuración de Spotify (2025)</CardTitle>
-            <CardDescription>Configuración actualizada según las nuevas reglas de Spotify (Abril 2025)</CardDescription>
-          </CardHeader>
-        </Card>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100">
+      <Navbar />
+      <div className="container mx-auto px-4 py-8 max-w-3xl">
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl sm:text-3xl">🚀 Configuración para Uso Público</CardTitle>
+              <CardDescription className="text-base sm:text-lg">
+                Cómo hacer que tu aplicación funcione para cualquier usuario de Spotify
+              </CardDescription>
+            </CardHeader>
+          </Card>
 
-        {/* Alerta sobre cambios */}
-        <Alert className="border-blue-200 bg-blue-50">
-          <Info className="h-4 w-4" />
-          <AlertDescription className="text-blue-800">
-            <strong>📅 Cambios importantes:</strong> Desde abril 2025, Spotify ya no permite <code>localhost</code> como
-            Redirect URI. Ahora debes usar direcciones IP de loopback como <code>127.0.0.1</code>.
-          </AlertDescription>
-        </Alert>
+          {/* Alerta importante sobre uso público */}
+          <Alert className="border-blue-200 bg-blue-50">
+            <Users className="h-4 w-4" />
+            <AlertDescription className="text-blue-800">
+              <strong>📢 Importante:</strong> Para que otros usuarios puedan usar tu aplicación, necesitas configurar tu
+              app de Spotify en "Modo de Desarrollo Extendido" o solicitar aprobación para producción.
+            </AlertDescription>
+          </Alert>
 
-        {/* Paso 1: Crear aplicación */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
-                1
+          {/* Paso 1: Configurar para desarrollo extendido */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                  1
+                </div>
+                <span>Configurar Modo de Desarrollo Extendido</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button onClick={openSpotifyDashboard} className="w-full bg-green-500 hover:bg-green-600">
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Abrir Spotify Developer Dashboard
+              </Button>
+
+              <div className="space-y-2">
+                <p>1. Ve a tu aplicación en Spotify Dashboard</p>
+                <p>
+                  2. Haz clic en <strong>"Settings"</strong>
+                </p>
+                <p>
+                  3. Busca la sección <strong>"Users and Access"</strong>
+                </p>
+                <p>4. Agrega usuarios de prueba:</p>
+                <ul className="list-disc list-inside ml-4 space-y-1">
+                  <li>
+                    Haz clic en <strong>"Add New User"</strong>
+                  </li>
+                  <li>
+                    Ingresa el <strong>nombre</strong> y <strong>email</strong> de cada usuario
+                  </li>
+                  <li>
+                    Puedes agregar hasta <strong>25 usuarios</strong> en modo desarrollo
+                  </li>
+                </ul>
               </div>
-              <span>Crear Aplicación en Spotify</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button onClick={openSpotifyDashboard} className="w-full bg-green-500 hover:bg-green-600">
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Abrir Spotify Developer Dashboard
-            </Button>
 
-            <div className="space-y-2">
-              <p>
-                1. Haz clic en <strong>"Create app"</strong>
-              </p>
-              <p>2. Completa los campos:</p>
-              <ul className="list-disc list-inside ml-4 space-y-1">
-                <li>
-                  <strong>App name:</strong> Spotify Playlist Manager
-                </li>
-                <li>
-                  <strong>App description:</strong> Aplicación para exportar e importar playlists
-                </li>
-                <li>
-                  <strong>Website:</strong> http://127.0.0.1:3000 (para desarrollo)
-                </li>
-                <li>
-                  <strong>Redirect URI:</strong> <em>Lo configuraremos en el siguiente paso</em>
-                </li>
-              </ul>
-              <p>
-                3. Acepta los términos y haz clic en <strong>"Save"</strong>
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+              <Alert className="border-orange-200 bg-orange-50">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription className="text-orange-800">
+                  <strong>⚠️ Limitación:</strong> En modo desarrollo, solo los usuarios que agregues manualmente podrán
+                  usar la aplicación.
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          </Card>
 
-        {/* Paso 2: Configurar Redirect URI */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
-                2
+          {/* Paso 2: Solicitar aprobación para producción */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <div className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                  2
+                </div>
+                <span>Solicitar Aprobación para Producción (Recomendado)</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <p>Para uso público sin limitaciones:</p>
+                <p>
+                  1. En tu aplicación de Spotify, ve a <strong>"App Status"</strong>
+                </p>
+                <p>
+                  2. Haz clic en <strong>"Request Extension"</strong>
+                </p>
+                <p>3. Completa el formulario con:</p>
+                <ul className="list-disc list-inside ml-4 space-y-1">
+                  <li>
+                    <strong>Descripción:</strong> "Aplicación para exportar e importar playlists de Spotify en formato
+                    CSV"
+                  </li>
+                  <li>
+                    <strong>Uso comercial:</strong> No (a menos que planees monetizar)
+                  </li>
+                  <li>
+                    <strong>Datos que recopilas:</strong> "Solo información básica del perfil y playlists del usuario"
+                  </li>
+                  <li>
+                    <strong>Cómo usas los datos:</strong> "Para mostrar y exportar las playlists del usuario"
+                  </li>
+                </ul>
+                <p>4. Adjunta capturas de pantalla de tu aplicación funcionando</p>
+                <p>5. Envía la solicitud</p>
               </div>
-              <span>Configurar Redirect URI</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Alert className="border-red-200 bg-red-50">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription className="text-red-800">
-                <strong>⚠️ Cambio importante:</strong> Ya NO uses <code>localhost</code>. Ahora debes usar{" "}
-                <code>127.0.0.1</code>
-              </AlertDescription>
-            </Alert>
 
-            <div className="space-y-3">
-              <p>
-                1. En tu aplicación de Spotify, haz clic en <strong>"Settings"</strong>
-              </p>
-              <p>
-                2. Busca la sección <strong>"Redirect URIs"</strong>
-              </p>
-              <p>
-                3. Haz clic en <strong>"Add URI"</strong>
-              </p>
-              <p>4. Pega exactamente esta URL:</p>
+              <Alert className="border-green-200 bg-green-50">
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription className="text-green-800">
+                  <strong>✅ Ventajas:</strong> Una vez aprobada, cualquier usuario de Spotify podrá usar tu aplicación
+                  sin restricciones.
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          </Card>
+
+          {/* Paso 3: Configurar URLs de producción */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <div className="bg-purple-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                  3
+                </div>
+                <span>Configurar URLs de Producción</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <p>1. Despliega tu aplicación en Vercel, Netlify, o tu plataforma preferida</p>
+                <p>2. En Spotify Dashboard → Settings → Redirect URIs</p>
+                <p>3. Agrega tu URL de producción:</p>
+              </div>
+
+              <div className="bg-gray-100 p-3 rounded border">
+                <code className="text-sm">https://tu-dominio.vercel.app/callback</code>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => copyToClipboard("https://tu-dominio.vercel.app/callback")}
+                  className="ml-2"
+                >
+                  <Copy className="w-3 h-3" />
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <p>4. Mantén también la URL de desarrollo:</p>
+              </div>
 
               <div className="bg-gray-100 p-3 rounded border">
                 <code className="text-sm">http://127.0.0.1:3000/callback</code>
@@ -118,215 +180,121 @@ export default function SetupGuide() {
                   <Copy className="w-3 h-3" />
                 </Button>
               </div>
+            </CardContent>
+          </Card>
 
-              <p>
-                5. Haz clic en <strong>"Add"</strong>
-              </p>
-              <p>
-                6. Haz clic en <strong>"Save"</strong> al final de la página
-              </p>
-            </div>
-
-            <Alert className="border-green-200 bg-green-50">
-              <CheckCircle className="h-4 w-4" />
-              <AlertDescription className="text-green-800">
-                <strong>✅ Correcto:</strong> Ahora deberías poder agregar la URL sin problemas. Spotify acepta
-                direcciones IP de loopback como <code>127.0.0.1</code>.
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-        </Card>
-
-        {/* Paso 3: Obtener Client ID */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
-                3
-              </div>
-              <span>Obtener Client ID</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <p>1. En la página de Settings de tu aplicación</p>
-              <p>
-                2. Copia el <strong>"Client ID"</strong> (está en la parte superior)
-              </p>
-              <p>
-                3. <strong>NO copies el Client Secret</strong> (no lo necesitamos)
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Paso 4: Configurar variables de entorno */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
-                4
-              </div>
-              <span>Configurar Variables de Entorno</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <p>
-                1. En tu proyecto, abre el archivo <code>.env.local</code>
-              </p>
-              <p>
-                2. Reemplaza <code>your_spotify_client_id_here</code> con tu Client ID real:
-              </p>
-            </div>
-
-            <div className="bg-gray-100 p-3 rounded border">
-              <code className="text-sm">NEXT_PUBLIC_SPOTIFY_CLIENT_ID=tu_client_id_aqui</code>
-            </div>
-
-            <Alert>
-              <AlertDescription>
-                <strong>Ejemplo:</strong> Si tu Client ID es <code>abc123def456</code>, entonces sería:
-                <br />
-                <code>NEXT_PUBLIC_SPOTIFY_CLIENT_ID=abc123def456</code>
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-        </Card>
-
-        {/* Paso 5: Acceder con la IP correcta */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <div className="bg-orange-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
-                5
-              </div>
-              <span>Acceder con la IP Correcta</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Alert className="border-orange-200 bg-orange-50">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription className="text-orange-800">
-                <strong>Importante:</strong> Debes acceder a tu aplicación usando <code>127.0.0.1</code> en lugar de{" "}
-                <code>localhost</code>
-              </AlertDescription>
-            </Alert>
-
-            <div className="space-y-2">
-              <p>
-                1. <strong>Reinicia</strong> tu servidor de desarrollo (Ctrl+C, luego <code>npm run dev</code>)
-              </p>
-              <p>
-                2. En lugar de ir a <code>http://localhost:3000</code>
-              </p>
-              <p>
-                3. <strong>Ve a:</strong> <code>http://127.0.0.1:3000</code>
-              </p>
-              <p>
-                4. Haz clic en <strong>"Conectar con Spotify"</strong>
-              </p>
-              <p>5. ¡Ahora debería funcionar sin errores!</p>
-            </div>
-
-            <div className="bg-blue-100 p-3 rounded border">
-              <p className="font-medium">🔗 URL correcta para desarrollo:</p>
-              <code className="text-sm">http://127.0.0.1:3000</code>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => copyToClipboard("http://127.0.0.1:3000")}
-                className="ml-2"
-              >
-                <Copy className="w-3 h-3" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* URLs para diferentes entornos */}
-        <Card>
-          <CardHeader>
-            <CardTitle>🌐 URLs para Diferentes Entornos</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Paso 4: Información sobre permisos */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <div className="bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                  4
+                </div>
+                <span>Permisos y Scopes Necesarios</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="space-y-2">
-                <p className="font-medium text-green-600">✅ Desarrollo (CORRECTO):</p>
-                <code className="text-sm bg-green-100 p-2 rounded block">http://127.0.0.1:3000/callback</code>
-                <Button size="sm" variant="outline" onClick={() => copyToClipboard("http://127.0.0.1:3000/callback")}>
-                  <Copy className="w-3 h-3 mr-1" />
-                  Copiar
-                </Button>
-              </div>
-
-              <div className="space-y-2">
-                <p className="font-medium text-green-600">✅ Producción (HTTPS):</p>
-                <code className="text-sm bg-green-100 p-2 rounded block">https://tu-dominio.vercel.app/callback</code>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => copyToClipboard("https://tu-dominio.vercel.app/callback")}
-                >
-                  <Copy className="w-3 h-3 mr-1" />
-                  Copiar
-                </Button>
-              </div>
-            </div>
-
-            <Alert className="border-red-200 bg-red-50">
-              <AlertDescription className="text-red-800">
-                <strong>❌ Ya NO funcionan:</strong>
-                <ul className="list-disc list-inside mt-2">
+                <p>Tu aplicación solicita estos permisos:</p>
+                <ul className="list-disc list-inside ml-4 space-y-1">
                   <li>
-                    <code>http://localhost:3000/callback</code>
+                    <strong>user-read-private:</strong> Leer información básica del perfil
                   </li>
                   <li>
-                    <code>https://localhost:3000/callback</code>
+                    <strong>user-read-email:</strong> Leer email del usuario
+                  </li>
+                  <li>
+                    <strong>playlist-read-private:</strong> Leer playlists privadas
+                  </li>
+                  <li>
+                    <strong>playlist-read-collaborative:</strong> Leer playlists colaborativas
+                  </li>
+                  <li>
+                    <strong>playlist-modify-public:</strong> Crear/modificar playlists públicas
+                  </li>
+                  <li>
+                    <strong>playlist-modify-private:</strong> Crear/modificar playlists privadas
+                  </li>
+                  <li>
+                    <strong>user-library-read:</strong> Leer canciones favoritas
+                  </li>
+                  <li>
+                    <strong>user-library-modify:</strong> Agregar canciones favoritas
                   </li>
                 </ul>
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-        </Card>
-
-        {/* Troubleshooting actualizado */}
-        <Card>
-          <CardHeader>
-            <CardTitle>🔧 Solución de Problemas</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div>
-                <p className="font-medium text-red-600">❌ "Invalid redirect URI"</p>
-                <p className="text-sm">
-                  Usa <code>http://127.0.0.1:3000/callback</code> en lugar de localhost
-                </p>
               </div>
 
-              <div>
-                <p className="font-medium text-red-600">❌ "localhost is not allowed"</p>
-                <p className="text-sm">
-                  Cambio de abril 2025: reemplaza localhost por <code>127.0.0.1</code>
-                </p>
-              </div>
+              <Alert>
+                <AlertDescription>
+                  <strong>💡 Nota:</strong> Estos permisos son necesarios para la funcionalidad completa de exportar e
+                  importar playlists.
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          </Card>
 
-              <div>
-                <p className="font-medium text-red-600">❌ No puedo agregar la URL en Spotify</p>
-                <p className="text-sm">
-                  Verifica que uses exactamente <code>http://127.0.0.1:3000/callback</code>
-                </p>
-              </div>
+          {/* Alternativa temporal */}
+          <Card>
+            <CardHeader>
+              <CardTitle>🔄 Alternativa Temporal</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert className="border-yellow-200 bg-yellow-50">
+                <Info className="h-4 w-4" />
+                <AlertDescription className="text-yellow-800">
+                  <strong>💡 Mientras esperas la aprobación:</strong>
+                  <br />
+                  Puedes agregar manualmente hasta 25 usuarios en el modo de desarrollo. Esto te permite probar la
+                  aplicación con amigos y familiares.
+                </AlertDescription>
+              </Alert>
 
-              <div>
-                <p className="font-medium text-red-600">❌ La aplicación no carga</p>
-                <p className="text-sm">
-                  Accede a <code>http://127.0.0.1:3000</code> en lugar de localhost
+              <div className="space-y-2">
+                <p>
+                  <strong>Para agregar usuarios temporalmente:</strong>
                 </p>
+                <ol className="list-decimal list-inside ml-4 space-y-1">
+                  <li>Ve a Spotify Dashboard → Tu App → Settings</li>
+                  <li>Busca "Users and Access"</li>
+                  <li>Haz clic en "Add New User"</li>
+                  <li>Ingresa nombre y email del usuario</li>
+                  <li>El usuario podrá usar la aplicación inmediatamente</li>
+                </ol>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* Checklist final */}
+          <Card>
+            <CardHeader>
+              <CardTitle>✅ Checklist Final</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <input type="checkbox" id="app-type" />
+                  <label htmlFor="app-type">Aplicación configurada como "Web App"</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input type="checkbox" id="redirect-uris" />
+                  <label htmlFor="redirect-uris">Redirect URIs configuradas (desarrollo y producción)</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input type="checkbox" id="users-added" />
+                  <label htmlFor="users-added">Usuarios de prueba agregados (modo desarrollo)</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input type="checkbox" id="extension-requested" />
+                  <label htmlFor="extension-requested">Solicitud de extensión enviada (para uso público)</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input type="checkbox" id="app-deployed" />
+                  <label htmlFor="app-deployed">Aplicación desplegada en producción</label>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )
