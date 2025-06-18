@@ -42,8 +42,32 @@ export default function SpotifyPlaylistManager() {
   const [message, setMessage] = useState("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
+  // Update the useEffect to check localStorage first
   useEffect(() => {
-    // Check for access token in URL hash (after OAuth redirect)
+    // Check for stored token first
+    const storedToken = localStorage.getItem("spotify_access_token")
+    const storedUser = localStorage.getItem("spotify_user")
+    const tokenTimestamp = localStorage.getItem("spotify_token_timestamp")
+
+    if (storedToken && storedUser && tokenTimestamp) {
+      // Check if token is still valid (Spotify tokens expire after 1 hour)
+      const tokenAge = Date.now() - Number.parseInt(tokenTimestamp)
+      const oneHour = 60 * 60 * 1000
+
+      if (tokenAge < oneHour) {
+        setAccessToken(storedToken)
+        setUser(JSON.parse(storedUser))
+        fetchPlaylists(storedToken)
+        return
+      } else {
+        // Token expired, clear storage
+        localStorage.removeItem("spotify_access_token")
+        localStorage.removeItem("spotify_user")
+        localStorage.removeItem("spotify_token_timestamp")
+      }
+    }
+
+    // Check for access token in URL hash (fallback for direct access)
     const hash = window.location.hash
     if (hash) {
       const token = hash
@@ -59,9 +83,10 @@ export default function SpotifyPlaylistManager() {
     }
   }, [])
 
+  // Update the loginToSpotify function to use the callback route
   const loginToSpotify = () => {
     const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || "your_client_id"
-    const redirectUri = encodeURIComponent(window.location.origin)
+    const redirectUri = encodeURIComponent(`${window.location.origin}/callback`)
     const scopes = encodeURIComponent(
       "user-read-private user-read-email playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify",
     )
@@ -70,6 +95,7 @@ export default function SpotifyPlaylistManager() {
     window.location.href = authUrl
   }
 
+  // Update fetchUserProfile to store data in localStorage
   const fetchUserProfile = async (token: string) => {
     try {
       const response = await fetch("https://api.spotify.com/v1/me", {
@@ -78,6 +104,11 @@ export default function SpotifyPlaylistManager() {
       const userData = await response.json()
       setUser(userData)
       fetchPlaylists(token)
+
+      // Store in localStorage
+      localStorage.setItem("spotify_access_token", token)
+      localStorage.setItem("spotify_user", JSON.stringify(userData))
+      localStorage.setItem("spotify_token_timestamp", Date.now().toString())
     } catch (error) {
       setMessage("Error al obtener perfil de usuario")
     }
@@ -361,11 +392,17 @@ export default function SpotifyPlaylistManager() {
     }
   }
 
+  // Update the logout function to clear localStorage
   const logout = () => {
     setAccessToken(null)
     setUser(null)
     setPlaylists([])
     setMessage("")
+
+    // Clear stored data
+    localStorage.removeItem("spotify_access_token")
+    localStorage.removeItem("spotify_user")
+    localStorage.removeItem("spotify_token_timestamp")
   }
 
   if (!accessToken) {
