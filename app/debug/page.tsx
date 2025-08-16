@@ -159,13 +159,13 @@ export default function DebugPage() {
                     <>
                       <CheckCircle className="w-4 h-4 inline mr-2" />
                       <strong>Client ID configurado:</strong>
-                      <div className="font-mono text-sm mt-1 bg-white p-2 rounded text-black">{clientId}</div>
+                      <div className="font-mono text-sm mt-1 bg-white p-2 rounded">{clientId}</div>
                     </>
                   ) : (
                     <>
                       <XCircle className="w-4 h-4 inline mr-2" />
                       <strong>Client ID no configurado</strong>
-                      <p className="mt-1 text-black">
+                      <p className="mt-1 text-slate-700 dark:text-slate-300">
                         Necesitas configurar tu Client ID en el archivo .env.local
                       </p>
                     </>
@@ -262,7 +262,7 @@ export default function DebugPage() {
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                     <div className="flex-1">
                       <p className="font-medium text-red-800 text-sm sm:text-base">❌ Ya NO funciona (2025):</p>
-                      <code className="text-xs sm:text-sm break-all text-black">http://localhost:3000/callback</code>
+                      <code className="text-xs sm:text-sm break-all">http://localhost:3000/callback</code>
                     </div>
                     <XCircle className="w-5 h-5 text-red-500" />
                   </div>
@@ -272,7 +272,7 @@ export default function DebugPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium text-green-800">✅ Correcto (2025):</p>
-                      <code className="text-sm text-black">http://127.0.0.1:3000/callback</code>
+                      <code className="text-sm">http://127.0.0.1:3000/callback</code>
                     </div>
                     <CheckCircle className="w-5 h-5 text-green-500" />
                   </div>
@@ -282,7 +282,7 @@ export default function DebugPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium text-green-800">✅ Producción:</p>
-                      <code className="text-sm text-black">https://tu-dominio.com/callback</code>
+                      <code className="text-sm">https://tu-dominio.com/callback</code>
                     </div>
                     <CheckCircle className="w-5 h-5 text-green-500" />
                   </div>

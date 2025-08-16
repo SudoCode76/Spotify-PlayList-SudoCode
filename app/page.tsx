@@ -462,17 +462,42 @@ export default function SpotifyPlaylistManager() {
 
   const searchTrack = async (trackName: string, artist: string): Promise<string | null> => {
     try {
-      const query = encodeURIComponent(`track:"${trackName}" artist:"${artist}"`)
+      // Clean up the search query
+      const cleanTrackName = trackName.replace(/[^\w\s]/g, "").trim()
+      const cleanArtist = artist.replace(/[^\w\s]/g, "").trim()
+
+      const query = encodeURIComponent(`track:"${cleanTrackName}" artist:"${cleanArtist}"`)
       const response = await fetch(`https://api.spotify.com/v1/search?q=${query}&type=track&limit=1`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
+
+      if (!response.ok) {
+        console.warn(`Search API error: ${response.status}`)
+        return null
+      }
+
       const data = await response.json()
 
       if (data.tracks && data.tracks.items.length > 0) {
         return data.tracks.items[0].id
       }
+
+      // If exact search fails, try a simpler search
+      const simpleQuery = encodeURIComponent(`${cleanTrackName} ${cleanArtist}`)
+      const fallbackResponse = await fetch(`https://api.spotify.com/v1/search?q=${simpleQuery}&type=track&limit=1`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+
+      if (fallbackResponse.ok) {
+        const fallbackData = await fallbackResponse.json()
+        if (fallbackData.tracks && fallbackData.tracks.items.length > 0) {
+          return fallbackData.tracks.items[0].id
+        }
+      }
+
       return null
     } catch (error) {
+      console.error("Error searching track:", error)
       return null
     }
   }
@@ -540,67 +565,140 @@ export default function SpotifyPlaylistManager() {
       setProgress(0)
 
       const text = await selectedFile.text()
-      const lines = text.split("\n").slice(1) // Skip header
-      const tracks: { [key: string]: Track[] } = {}
+      const lines = text.split("\n").filter((line) => line.trim()) // Remove empty lines
 
-      // Parse CSV
-      lines.forEach((line) => {
+      if (lines.length === 0) {
+        setMessage("El archivo CSV está vacío")
+        return
+      }
+
+      // Skip header and parse CSV
+      const dataLines = lines.slice(1)
+      const tracks: { [key: string]: Track[] } = {}
+      let validLines = 0
+
+      console.log("Total lines to process:", dataLines.length)
+
+      // Parse CSV with better regex and error handling
+      dataLines.forEach((line, index) => {
         if (line.trim()) {
-          const matches = line.match(/^"([^"]*?)","([^"]*?)","([^"]*?)","([^"]*?)",(\d+),"([^"]*?)","([^"]*?)"$/)
-          if (matches) {
+          // Handle different CSV formats - try multiple parsing approaches
+          let matches = null
+
+          // Try parsing with quotes
+          matches = line.match(/^"([^"]*?)","([^"]*?)","([^"]*?)","([^"]*?)",(\d+),"([^"]*?)","([^"]*?)"/)
+
+          // If that fails, try without quotes
+          if (!matches) {
+            const parts = line.split(",")
+            if (parts.length >= 7) {
+              matches = [
+                line,
+                parts[0].replace(/"/g, ""),
+                parts[1].replace(/"/g, ""),
+                parts[2].replace(/"/g, ""),
+                parts[3].replace(/"/g, ""),
+                parts[4].replace(/"/g, ""),
+                parts[5].replace(/"/g, ""),
+                parts[6].replace(/"/g, ""),
+              ]
+            }
+          }
+
+          if (matches && matches.length >= 8) {
             const [, playlistName, name, artist, album, duration, spotifyId, addedAt] = matches
-            if (!tracks[playlistName]) tracks[playlistName] = []
-            tracks[playlistName].push({
-              name,
-              artist,
-              album,
-              duration_ms: Number.parseInt(duration),
-              spotify_id: spotifyId,
-              added_at: addedAt,
-              playlist_name: playlistName,
-            })
+
+            // Only process if we have essential data
+            if (name && artist && playlistName) {
+              if (!tracks[playlistName]) tracks[playlistName] = []
+              tracks[playlistName].push({
+                name: name.trim(),
+                artist: artist.trim(),
+                album: album.trim(),
+                duration_ms: Number.parseInt(duration) || 0,
+                spotify_id: spotifyId.trim(),
+                added_at: addedAt.trim(),
+                playlist_name: playlistName.trim(),
+              })
+              validLines++
+            }
+          } else {
+            console.warn(`Could not parse line ${index + 2}:`, line)
           }
         }
       })
 
+      console.log("Valid lines parsed:", validLines)
+      console.log("Playlists found:", Object.keys(tracks))
+
+      if (validLines === 0) {
+        setMessage("No se pudieron procesar las líneas del CSV. Verifica el formato del archivo.")
+        return
+      }
+
       let processedTracks = 0
       const totalTracks = Object.values(tracks).flat().length
+      let createdPlaylists = 0
+      let addedToLiked = 0
+
+      setMessage(`Procesando ${totalTracks} canciones en ${Object.keys(tracks).length} playlists...`)
 
       // Process each playlist
       for (const [playlistName, playlistTracks] of Object.entries(tracks)) {
-        setMessage(`Procesando: ${playlistName}`)
+        setCurrentExportItem(`Procesando: ${playlistName} (${playlistTracks.length} canciones)`)
 
         const foundTrackIds: string[] = []
 
         // Search for tracks
         for (const track of playlistTracks) {
-          const trackId = await searchTrack(track.name, track.artist)
-          if (trackId) {
-            foundTrackIds.push(trackId)
+          try {
+            const trackId = await searchTrack(track.name, track.artist)
+            if (trackId) {
+              foundTrackIds.push(trackId)
+            }
+          } catch (error) {
+            console.warn(`Error searching for track: ${track.name} by ${track.artist}`)
           }
+
           processedTracks++
           setProgress((processedTracks / totalTracks) * 100)
         }
 
+        // Add tracks to playlist or liked songs
         if (foundTrackIds.length > 0) {
-          if (playlistName === "Liked Songs") {
-            await addToLikedSongs(foundTrackIds)
-          } else {
-            const playlistId = await createPlaylist(playlistName)
-            if (playlistId) {
-              await addTracksToPlaylist(playlistId, foundTrackIds)
+          try {
+            if (playlistName.toLowerCase() === "liked songs" || playlistName.toLowerCase() === "canciones favoritas") {
+              await addToLikedSongs(foundTrackIds)
+              addedToLiked += foundTrackIds.length
+              setMessage(`Agregadas ${foundTrackIds.length} canciones a favoritas`)
+            } else {
+              const playlistId = await createPlaylist(playlistName)
+              if (playlistId) {
+                await addTracksToPlaylist(playlistId, foundTrackIds)
+                createdPlaylists++
+                setMessage(`Playlist "${playlistName}" creada con ${foundTrackIds.length} canciones`)
+              }
             }
+          } catch (error) {
+            console.error(`Error processing playlist ${playlistName}:`, error)
           }
         }
       }
 
-      setMessage(`Importación completada: ${processedTracks} canciones procesadas`)
-      fetchPlaylists(accessToken) // Refresh playlists
+      setCurrentExportItem("Importación completada")
+      setMessage(
+        `Importación completada: ${createdPlaylists} playlists creadas, ${addedToLiked} canciones agregadas a favoritas, ${processedTracks} canciones procesadas`,
+      )
+
+      // Refresh playlists to show new ones
+      await fetchPlaylists(accessToken)
     } catch (error) {
-      setMessage("Error durante la importación")
+      console.error("Error during import:", error)
+      setMessage(`Error durante la importación: ${error instanceof Error ? error.message : "Error desconocido"}`)
     } finally {
       setLoading(false)
       setProgress(0)
+      setCurrentExportItem("")
     }
   }
 
@@ -704,7 +802,7 @@ export default function SpotifyPlaylistManager() {
                   <CardTitle className="text-xl sm:text-2xl bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
                     Spotify Playlist SudoCode
                   </CardTitle>
-                  <CardDescription className="flex items-center space-x-2 text-slate-600 dark:text-slate-300">
+                  <CardDescription className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
                     <User className="w-4 h-4" />
                     <span>Conectado como {user?.display_name}</span>
                     {user?.email && (
@@ -721,7 +819,7 @@ export default function SpotifyPlaylistManager() {
                 <Button
                   variant="outline"
                   onClick={logout}
-                  className="border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  className="border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 bg-transparent"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
                   Desconectar
@@ -907,14 +1005,29 @@ export default function SpotifyPlaylistManager() {
                 onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                 className="border-slate-200 dark:border-slate-700 focus:border-emerald-500 dark:focus:border-emerald-400"
               />
+              {selectedFile && (
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+                  Archivo seleccionado: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                </p>
+              )}
             </div>
+
+            <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/50">
+              <AlertDescription className="text-blue-800 dark:text-blue-200">
+                <strong>Formato esperado del CSV:</strong>
+                <br />• Primera línea: encabezados
+                <br />• Columnas: Playlist, Canción, Artista, Álbum, Duración, ID, Fecha
+                <br />• Para canciones favoritas usa "Liked Songs" como nombre de playlist
+              </AlertDescription>
+            </Alert>
+
             <Button
               onClick={importFromCSV}
               disabled={!selectedFile || loading}
               className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-lg"
             >
               <Upload className="w-4 h-4 mr-2" />
-              Importar desde CSV
+              {loading ? "Importando..." : "Importar desde CSV"}
             </Button>
           </CardContent>
         </Card>
