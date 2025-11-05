@@ -7,13 +7,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Music, Download, Upload, Heart, List, User, LogOut, Users2, Eye, CheckCircle } from "lucide-react"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { Navbar } from "@/components/navbar"
-import Image from "next/image"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Music, Download, Upload, Heart, List, User, LogOut, Users2, Eye, CheckCircle, Sun, Moon } from "lucide-react"
 import { useTheme } from "next-themes"
+import Image from "next/image"
 
+// ... (interfaces and ThemeToggle component remain the same)
 interface SpotifyUser {
   id: string
   display_name: string
@@ -55,6 +54,23 @@ interface ExportStats {
   followedArtists: number
 }
 
+function ThemeToggle() {
+    const { setTheme, theme } = useTheme()
+
+    return (
+        <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+        >
+            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span className="sr-only">Toggle theme</span>
+        </Button>
+    )
+}
+
+
 export default function SpotifyPlaylistManager() {
   const [mounted, setMounted] = useState(false)
   const [accessToken, setAccessToken] = useState<string | null>(null)
@@ -76,88 +92,66 @@ export default function SpotifyPlaylistManager() {
   useEffect(() => {
     if (!mounted) return
 
-    // Check for stored token first
-    const storedToken = localStorage.getItem("spotify_access_token")
-    const storedUser = localStorage.getItem("spotify_user")
-    const tokenTimestamp = localStorage.getItem("spotify_token_timestamp")
+    const code = new URLSearchParams(window.location.search).get('code');
 
-    if (storedToken && storedUser && tokenTimestamp) {
-      // Check if token is still valid (Spotify tokens expire after 1 hour)
-      const tokenAge = Date.now() - Number.parseInt(tokenTimestamp)
-      const oneHour = 60 * 60 * 1000
+    if (code) {
+        window.history.pushState({}, '', '/callback');
+        fetch('/api/spotify/token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ code }),
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.access_token) {
+                setAccessToken(data.access_token);
+                fetchUserProfile(data.access_token);
+            } else {
+                setMessage("Error: No se pudo obtener el token de acceso.");
+            }
+        })
+        .catch(() => setMessage("Error al intercambiar el código por el token."));
+    } else {
+        const storedToken = localStorage.getItem("spotify_access_token");
+        const storedUser = localStorage.getItem("spotify_user");
+        const tokenTimestamp = localStorage.getItem("spotify_token_timestamp");
 
-      if (tokenAge < oneHour) {
-        setAccessToken(storedToken)
-        setUser(JSON.parse(storedUser))
-        fetchPlaylists(storedToken)
-        return
-      } else {
-        // Token expired, clear storage
-        localStorage.removeItem("spotify_access_token")
-        localStorage.removeItem("spotify_user")
-        localStorage.removeItem("spotify_token_timestamp")
-      }
-    }
+        if (storedToken && storedUser && tokenTimestamp) {
+            const tokenAge = Date.now() - Number.parseInt(tokenTimestamp);
+            const oneHour = 60 * 60 * 1000;
 
-    // Check for access token in URL hash (fallback for direct access)
-    const hash = window.location.hash
-    if (hash) {
-      const token = hash
-        .substring(1)
-        .split("&")
-        .find((elem) => elem.startsWith("access_token"))
-        ?.split("=")[1]
-      if (token) {
-        setAccessToken(token)
-        window.location.hash = ""
-        fetchUserProfile(token)
-      }
+            if (tokenAge < oneHour) {
+                setAccessToken(storedToken);
+                setUser(JSON.parse(storedUser));
+                fetchPlaylists(storedToken);
+            } else {
+                localStorage.clear();
+            }
+        }
     }
   }, [mounted])
 
-  // Updated loginToSpotify function to use Authorization Code Flow
   const loginToSpotify = () => {
     const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || "your_client_id"
-
-    console.log("=== SPOTIFY LOGIN DEBUG ===")
-    console.log("Client ID:", clientId)
-    console.log("Current location:", window.location.href)
-
-    // Use 127.0.0.1 instead of localhost as per new Spotify requirements
     const currentHost = window.location.hostname
     const currentPort = window.location.port
 
-    console.log("Current host:", currentHost)
-    console.log("Current port:", currentPort)
-
-    // Determine the correct redirect URI based on environment
     let redirectUri: string
     if (currentHost === "localhost" || currentHost === "127.0.0.1") {
-      // For local development, use 127.0.0.1
       redirectUri = `http://127.0.0.1:${currentPort || "3000"}/callback`
     } else {
-      // For production, use the current origin
       redirectUri = `${window.location.origin}/callback`
     }
 
-    console.log("Redirect URI:", redirectUri)
-
     const encodedRedirectUri = encodeURIComponent(redirectUri)
     const scopes = encodeURIComponent(
-      "user-read-private user-read-email playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify user-follow-read",
+      "user-read-private user-read-email playlist-read-private playlist-read-collaborative playlist-modify-public playlist-modify-private user-library-read user-library-modify user-follow-read user-follow-modify",
     )
 
-    // Use Authorization Code Flow with show_dialog=true for better UX
     const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodedRedirectUri}&scope=${scopes}&show_dialog=true`
 
-    console.log("=== SPOTIFY AUTH URL ===")
-    console.log("Full URL:", authUrl)
-    console.log("Response Type: code (Authorization Code Flow)")
-    console.log("Encoded Redirect URI:", encodedRedirectUri)
-    console.log("Show Dialog: true (forces login screen)")
-    console.log("========================")
-
-    // Validate client ID before redirecting
     if (!clientId || clientId === "your_client_id") {
       alert("Error: Client ID no configurado. Revisa tu archivo .env.local")
       return
@@ -175,7 +169,6 @@ export default function SpotifyPlaylistManager() {
       setUser(userData)
       fetchPlaylists(token)
 
-      // Store in localStorage
       localStorage.setItem("spotify_access_token", token)
       localStorage.setItem("spotify_user", JSON.stringify(userData))
       localStorage.setItem("spotify_token_timestamp", Date.now().toString())
@@ -270,13 +263,10 @@ export default function SpotifyPlaylistManager() {
 
   const fetchFollowedArtists = async (): Promise<Artist[]> => {
     const artists: Artist[] = []
-    let after = ""
-    const limit = 50
+    let after: string | null = null;
 
     while (true) {
-      const url = after
-        ? `https://api.spotify.com/v1/me/following?type=artist&limit=${limit}&after=${after}`
-        : `https://api.spotify.com/v1/me/following?type=artist&limit=${limit}`
+      const url = `https://api.spotify.com/v1/me/following?type=artist&limit=50` + (after ? `&after=${after}` : '');
 
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -296,8 +286,7 @@ export default function SpotifyPlaylistManager() {
         })
       })
 
-      if (data.artists.items.length < limit) break
-      after = data.artists.cursors?.after
+      after = data.artists.cursors?.after;
       if (!after) break
     }
 
@@ -313,12 +302,10 @@ export default function SpotifyPlaylistManager() {
       setMessage("Analizando contenido para exportar...")
       setProgress(0)
 
-      // Count liked songs
       setCurrentExportItem("Contando canciones favoritas...")
       const likedSongs = await fetchLikedSongs()
       setProgress(20)
 
-      // Count playlist tracks
       let totalTracks = likedSongs.length
       setCurrentExportItem("Contando canciones en playlists...")
       for (let i = 0; i < playlists.length; i++) {
@@ -327,23 +314,16 @@ export default function SpotifyPlaylistManager() {
         setProgress(20 + ((i + 1) / playlists.length) * 40)
       }
 
-      // Count followed artists
       setCurrentExportItem("Contando artistas seguidos...")
       const followedArtists = await fetchFollowedArtists()
       setProgress(80)
 
-      // Get unique artists from tracks
       setCurrentExportItem("Analizando artistas únicos...")
       const uniqueArtists = new Set<string>()
-
-      // Add artists from liked songs
       likedSongs.forEach((track) => {
         track.artist.split(", ").forEach((artist) => uniqueArtists.add(artist.trim()))
       })
-
-      // Add artists from playlists (estimate)
       playlists.forEach((playlist) => {
-        // Estimate 2-3 unique artists per 5 tracks
         const estimatedArtists = Math.floor(playlist.tracks.total * 0.5)
         for (let i = 0; i < estimatedArtists; i++) {
           uniqueArtists.add(`artist_${playlist.id}_${i}`)
@@ -383,64 +363,73 @@ export default function SpotifyPlaylistManager() {
       const allArtists: Artist[] = []
       const uniqueArtistNames = new Set<string>()
 
-      // Export liked songs
       setCurrentExportItem("Exportando canciones favoritas...")
       const likedSongs = await fetchLikedSongs()
       allTracks.push(...likedSongs)
-
-      // Collect artists from liked songs
       likedSongs.forEach((track) => {
         track.artist.split(", ").forEach((artist) => uniqueArtistNames.add(artist.trim()))
       })
       setProgress(15)
 
-      // Export playlists
       for (let i = 0; i < playlists.length; i++) {
         const playlist = playlists[i]
         setCurrentExportItem(`Exportando playlist: ${playlist.name}`)
         const tracks = await fetchPlaylistTracks(playlist.id, playlist.name)
         allTracks.push(...tracks)
-
-        // Collect artists from playlist tracks
         tracks.forEach((track) => {
           track.artist.split(", ").forEach((artist) => uniqueArtistNames.add(artist.trim()))
         })
-
         setProgress(15 + ((i + 1) / playlists.length) * 60)
       }
 
-      // Export followed artists
       setCurrentExportItem("Exportando artistas seguidos...")
       const followedArtists = await fetchFollowedArtists()
       allArtists.push(...followedArtists)
       setProgress(85)
 
-      // Create unified CSV with all data
       setCurrentExportItem("Generando archivo unificado...")
       const unifiedCSVHeader =
-        "Type,Playlist,Song,Artist,Album,Duration (ms),Spotify ID,Added At,Genres,Followers,Popularity,Spotify URL\n"
+        'Type,Playlist,Song,Artist,Album,Duration (ms),Spotify ID,Added At,Genres,Followers,Popularity,Spotify URL\n';
+
+      const escapeCSV = (str: string) => `"${str.replace(/"/g, '""')}"`;
 
       const unifiedCSVContent = [
-        // Add all tracks
         ...allTracks.map(
           (track) =>
-            `"Track","${track.playlist_name}","${track.name}","${track.artist}","${track.album}",${track.duration_ms},"${track.spotify_id}","${track.added_at}","","","",""`,
+            [
+              escapeCSV('Track'),
+              escapeCSV(track.playlist_name || ''),
+              escapeCSV(track.name),
+              escapeCSV(track.artist),
+              escapeCSV(track.album),
+              track.duration_ms,
+              escapeCSV(track.spotify_id),
+              escapeCSV(track.added_at),
+              '""','""','""','""'
+            ].join(',')
         ),
-        // Add followed artists
         ...followedArtists.map(
           (artist) =>
-            `"Followed Artist","","","${artist.name}","","","","","${artist.genres.join("; ")}",${artist.followers},${artist.popularity},"${artist.external_urls.spotify}"`,
+            [
+              escapeCSV('Followed Artist'),
+              '""', // Playlist
+              '""', // Song
+              escapeCSV(artist.name),
+              '""', // Album
+              '""', // Duration
+              escapeCSV(artist.id),
+              '""', // Added at
+              escapeCSV(artist.genres.join('; ')),
+              artist.followers,
+              artist.popularity,
+              escapeCSV(artist.external_urls.spotify)
+            ].join(',')
         ),
-        // Add unique artists from tracks
-        ...Array.from(uniqueArtistNames)
-          .filter((artistName) => !followedArtists.some((fa) => fa.name === artistName)) // Avoid duplicates
-          .map((artistName) => `"Track Artist","","","${artistName}","","","","","","","",""`),
       ].join("\n")
 
       setProgress(95)
 
-      // Download unified CSV
-      const unifiedBlob = new Blob([unifiedCSVHeader + unifiedCSVContent], { type: "text/csv;charset=utf-8;" })
+      const unifiedBlob = new Blob(["\uFEFF" + unifiedCSVHeader + unifiedCSVContent], { type: "text/csv;charset=utf-8;" })
       const unifiedLink = document.createElement("a")
       unifiedLink.href = URL.createObjectURL(unifiedBlob)
       unifiedLink.download = `spotify_complete_export_${user?.display_name || "user"}_${new Date().toISOString().split("T")[0]}.csv`
@@ -449,7 +438,7 @@ export default function SpotifyPlaylistManager() {
       setProgress(100)
       setCurrentExportItem("Exportación completada")
       setMessage(
-        `Exportación completada: ${allTracks.length} canciones y ${followedArtists.length + uniqueArtistNames.size} artistas exportados en un solo archivo`,
+        `Exportación completada: ${allTracks.length} canciones y ${followedArtists.length} artistas exportados.`,
       )
     } catch (error) {
       setMessage("Error durante la exportación")
@@ -462,45 +451,81 @@ export default function SpotifyPlaylistManager() {
 
   const searchTrack = async (trackName: string, artist: string): Promise<string | null> => {
     try {
-      // Clean up the search query
-      const cleanTrackName = trackName.replace(/[^\w\s]/g, "").trim()
-      const cleanArtist = artist.replace(/[^\w\s]/g, "").trim()
-
-      const query = encodeURIComponent(`track:"${cleanTrackName}" artist:"${cleanArtist}"`)
+      const query = encodeURIComponent(`track:"${trackName.trim()}" artist:"${artist.trim()}"`);
       const response = await fetch(`https://api.spotify.com/v1/search?q=${query}&type=track&limit=1`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
 
-      if (!response.ok) {
-        console.warn(`Search API error: ${response.status}`)
-        return null
-      }
-
-      const data = await response.json()
-
-      if (data.tracks && data.tracks.items.length > 0) {
-        return data.tracks.items[0].id
-      }
-
-      // If exact search fails, try a simpler search
-      const simpleQuery = encodeURIComponent(`${cleanTrackName} ${cleanArtist}`)
-      const fallbackResponse = await fetch(`https://api.spotify.com/v1/search?q=${simpleQuery}&type=track&limit=1`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
-
-      if (fallbackResponse.ok) {
-        const fallbackData = await fallbackResponse.json()
-        if (fallbackData.tracks && fallbackData.tracks.items.length > 0) {
-          return fallbackData.tracks.items[0].id
+      if (response.ok) {
+        const data = await response.json();
+        if (data.tracks && data.tracks.items.length > 0) {
+          return data.tracks.items[0].id;
         }
       }
 
-      return null
+      const simpleQuery = encodeURIComponent(`${trackName.trim()} ${artist.trim()}`);
+      const fallbackResponse = await fetch(`https://api.spotify.com/v1/search?q=${simpleQuery}&type=track&limit=1`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      if (fallbackResponse.ok) {
+        const fallbackData = await fallbackResponse.json();
+        if (fallbackData.tracks && fallbackData.tracks.items.length > 0) {
+          return fallbackData.tracks.items[0].id;
+        }
+      }
+
+      console.warn(`Track not found: ${trackName} by ${artist}`);
+      return null;
     } catch (error) {
-      console.error("Error searching track:", error)
-      return null
+      console.error("Error searching track:", error);
+      return null;
     }
   }
+
+  const searchArtist = async (artistName: string): Promise<string | null> => {
+    try {
+      const query = encodeURIComponent(`artist:"${artistName.trim()}"`);
+      const response = await fetch(`https://api.spotify.com/v1/search?q=${query}&type=artist&limit=1`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!response.ok) {
+        console.warn(`Artist search API error: ${response.status}`);
+        return null;
+      }
+      const data = await response.json();
+      if (data.artists && data.artists.items.length > 0) {
+        return data.artists.items[0].id;
+      }
+      console.warn(`Artist not found: ${artistName}`);
+      return null;
+    } catch (error) {
+      console.error("Error searching artist:", error);
+      return null;
+    }
+  };
+
+  const followArtists = async (artistIds: string[]) => {
+    if (artistIds.length === 0) return;
+    try {
+      const batchSize = 50;
+      for (let i = 0; i < artistIds.length; i += batchSize) {
+        const batch = artistIds.slice(i, i + batchSize);
+        await fetch(`https://api.spotify.com/v1/me/following?type=artist`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ids: batch }),
+        });
+      }
+    } catch (error) {
+        console.error("Error following artists:", error);
+        setMessage("Error al seguir artistas. Es posible que falten permisos. Intenta iniciar sesión de nuevo.");
+    }
+  };
+
 
   const createPlaylist = async (name: string): Promise<string | null> => {
     try {
@@ -512,7 +537,7 @@ export default function SpotifyPlaylistManager() {
         },
         body: JSON.stringify({
           name: name,
-          description: "Imported from CSV via Spotify Playlist Manager",
+          description: "Imported from CSV via Spotify Playlist SudoCode",
           public: false,
         }),
       })
@@ -524,6 +549,7 @@ export default function SpotifyPlaylistManager() {
   }
 
   const addTracksToPlaylist = async (playlistId: string, trackIds: string[]) => {
+    if (trackIds.length === 0) return;
     const batchSize = 100
     for (let i = 0; i < trackIds.length; i += batchSize) {
       const batch = trackIds.slice(i, i + batchSize)
@@ -541,6 +567,7 @@ export default function SpotifyPlaylistManager() {
   }
 
   const addToLikedSongs = async (trackIds: string[]) => {
+    if (trackIds.length === 0) return;
     const batchSize = 50
     for (let i = 0; i < trackIds.length; i += batchSize) {
       const batch = trackIds.slice(i, i + batchSize)
@@ -557,150 +584,145 @@ export default function SpotifyPlaylistManager() {
   }
 
   const importFromCSV = async () => {
-    if (!selectedFile || !accessToken) return
+    if (!selectedFile || !accessToken) return;
 
     try {
-      setLoading(true)
-      setMessage("Leyendo archivo CSV...")
-      setProgress(0)
+      setLoading(true);
+      setMessage("Leyendo archivo CSV...");
+      setProgress(0);
 
-      const text = await selectedFile.text()
-      const lines = text.split("\n").filter((line) => line.trim()) // Remove empty lines
+      const text = await selectedFile.text();
+      const lines = text.split(/\r?\n/).filter((line) => line.trim());
 
-      if (lines.length === 0) {
-        setMessage("El archivo CSV está vacío")
-        return
+      if (lines.length <= 1) {
+        setMessage("El archivo CSV está vacío o solo contiene encabezados.");
+        setLoading(false);
+        return;
       }
 
-      // Skip header and parse CSV
-      const dataLines = lines.slice(1)
-      const tracks: { [key: string]: Track[] } = {}
-      let validLines = 0
+      setMessage("Clasificando datos del CSV...");
+      const dataLines = lines.slice(1);
+      const tracksByPlaylist = new Map<string, { name: string; artist: string }[]>();
+      const artistsToFollowNames = new Set<string>();
 
-      console.log("Total lines to process:", dataLines.length)
-
-      // Parse CSV with better regex and error handling
-      dataLines.forEach((line, index) => {
-        if (line.trim()) {
-          // Handle different CSV formats - try multiple parsing approaches
-          let matches = null
-
-          // Try parsing with quotes
-          matches = line.match(/^"([^"]*?)","([^"]*?)","([^"]*?)","([^"]*?)",(\d+),"([^"]*?)","([^"]*?)"/)
-
-          // If that fails, try without quotes
-          if (!matches) {
-            const parts = line.split(",")
-            if (parts.length >= 7) {
-              matches = [
-                line,
-                parts[0].replace(/"/g, ""),
-                parts[1].replace(/"/g, ""),
-                parts[2].replace(/"/g, ""),
-                parts[3].replace(/"/g, ""),
-                parts[4].replace(/"/g, ""),
-                parts[5].replace(/"/g, ""),
-                parts[6].replace(/"/g, ""),
-              ]
-            }
-          }
-
-          if (matches && matches.length >= 8) {
-            const [, playlistName, name, artist, album, duration, spotifyId, addedAt] = matches
-
-            // Only process if we have essential data
-            if (name && artist && playlistName) {
-              if (!tracks[playlistName]) tracks[playlistName] = []
-              tracks[playlistName].push({
-                name: name.trim(),
-                artist: artist.trim(),
-                album: album.trim(),
-                duration_ms: Number.parseInt(duration) || 0,
-                spotify_id: spotifyId.trim(),
-                added_at: addedAt.trim(),
-                playlist_name: playlistName.trim(),
-              })
-              validLines++
-            }
-          } else {
-            console.warn(`Could not parse line ${index + 2}:`, line)
-          }
-        }
-      })
-
-      console.log("Valid lines parsed:", validLines)
-      console.log("Playlists found:", Object.keys(tracks))
-
-      if (validLines === 0) {
-        setMessage("No se pudieron procesar las líneas del CSV. Verifica el formato del archivo.")
-        return
-      }
-
-      let processedTracks = 0
-      const totalTracks = Object.values(tracks).flat().length
-      let createdPlaylists = 0
-      let addedToLiked = 0
-
-      setMessage(`Procesando ${totalTracks} canciones en ${Object.keys(tracks).length} playlists...`)
-
-      // Process each playlist
-      for (const [playlistName, playlistTracks] of Object.entries(tracks)) {
-        setCurrentExportItem(`Procesando: ${playlistName} (${playlistTracks.length} canciones)`)
-
-        const foundTrackIds: string[] = []
-
-        // Search for tracks
-        for (const track of playlistTracks) {
-          try {
-            const trackId = await searchTrack(track.name, track.artist)
-            if (trackId) {
-              foundTrackIds.push(trackId)
-            }
-          } catch (error) {
-            console.warn(`Error searching for track: ${track.name} by ${track.artist}`)
-          }
-
-          processedTracks++
-          setProgress((processedTracks / totalTracks) * 100)
-        }
-
-        // Add tracks to playlist or liked songs
-        if (foundTrackIds.length > 0) {
-          try {
-            if (playlistName.toLowerCase() === "liked songs" || playlistName.toLowerCase() === "canciones favoritas") {
-              await addToLikedSongs(foundTrackIds)
-              addedToLiked += foundTrackIds.length
-              setMessage(`Agregadas ${foundTrackIds.length} canciones a favoritas`)
-            } else {
-              const playlistId = await createPlaylist(playlistName)
-              if (playlistId) {
-                await addTracksToPlaylist(playlistId, foundTrackIds)
-                createdPlaylists++
-                setMessage(`Playlist "${playlistName}" creada con ${foundTrackIds.length} canciones`)
+      const parseCsvLine = (line: string): string[] => {
+          const values = [];
+          let current = '';
+          let inQuotes = false;
+          for (let i = 0; i < line.length; i++) {
+              const char = line[i];
+              if (char === '"' && i + 1 < line.length && line[i+1] === '"') {
+                  current += '"';
+                  i++; // Skip next quote
+              } else if (char === '"') {
+                  inQuotes = !inQuotes;
+              } else if (char === ',' && !inQuotes) {
+                  values.push(current);
+                  current = '';
+              } else {
+                  current += char;
               }
-            }
-          } catch (error) {
-            console.error(`Error processing playlist ${playlistName}:`, error)
           }
-        }
+          values.push(current);
+          return values;
       }
 
-      setCurrentExportItem("Importación completada")
-      setMessage(
-        `Importación completada: ${createdPlaylists} playlists creadas, ${addedToLiked} canciones agregadas a favoritas, ${processedTracks} canciones procesadas`,
-      )
+      dataLines.forEach((line) => {
+        if (!line.trim()) return;
+        
+        const values = parseCsvLine(line);
+        const [type, playlistName, songName, artistName] = values;
 
-      // Refresh playlists to show new ones
-      await fetchPlaylists(accessToken)
+        if (type === 'Track' && songName && artistName) {
+          const trackData = { name: songName, artist: artistName };
+          if (!tracksByPlaylist.has(playlistName)) {
+            tracksByPlaylist.set(playlistName, []);
+          }
+          tracksByPlaylist.get(playlistName)?.push(trackData);
+        } else if (type === 'Followed Artist' && artistName) {
+          artistsToFollowNames.add(artistName);
+        }
+      });
+      
+      const likedSongsTracks = tracksByPlaylist.get('Liked Songs') || tracksByPlaylist.get('Canciones favoritas') || [];
+      tracksByPlaylist.delete('Liked Songs');
+      tracksByPlaylist.delete('Canciones favoritas');
+
+      let totalOperations = tracksByPlaylist.size + (likedSongsTracks.length > 0 ? 1 : 0) + (artistsToFollowNames.size > 0 ? 1 : 0);
+      let completedOperations = 0;
+      let summary = { playlists: 0, liked: 0, followed: 0 };
+
+      if (artistsToFollowNames.size > 0) {
+        setCurrentExportItem(`Buscando ${artistsToFollowNames.size} artistas para seguir...`);
+        const artistIdsToFollow: string[] = [];
+        for (const artistName of Array.from(artistsToFollowNames)) {
+          const artistId = await searchArtist(artistName);
+          if (artistId) {
+            artistIdsToFollow.push(artistId);
+          }
+        }
+        
+        if (artistIdsToFollow.length > 0) {
+          setCurrentExportItem(`Siguiendo a ${artistIdsToFollow.length} artistas...`);
+          await followArtists(artistIdsToFollow);
+          summary.followed = artistIdsToFollow.length;
+        }
+        completedOperations++;
+        setProgress((completedOperations / totalOperations) * 100);
+      }
+
+      if (likedSongsTracks.length > 0) {
+        setCurrentExportItem(`Procesando ${likedSongsTracks.length} canciones para 'Me gusta'...`);
+        const foundTrackIds: string[] = [];
+        for (const track of likedSongsTracks) {
+          const trackId = await searchTrack(track.name, track.artist);
+          if (trackId) {
+            foundTrackIds.push(trackId);
+          }
+        }
+        if (foundTrackIds.length > 0) {
+          await addToLikedSongs(foundTrackIds);
+          summary.liked = foundTrackIds.length;
+        }
+        completedOperations++;
+        setProgress((completedOperations / totalOperations) * 100);
+      }
+
+      for (const [playlistName, tracks] of tracksByPlaylist.entries()) {
+        setCurrentExportItem(`Procesando playlist: ${playlistName} (${tracks.length} canciones)`);
+        const foundTrackIds: string[] = [];
+        for (const track of tracks) {
+          const trackId = await searchTrack(track.name, track.artist);
+          if (trackId) {
+            foundTrackIds.push(trackId);
+          }
+        }
+
+        if (foundTrackIds.length > 0) {
+          const playlistId = await createPlaylist(playlistName);
+          if (playlistId) {
+            setCurrentExportItem(`Agregando ${foundTrackIds.length} canciones a '${playlistName}'...`);
+            await addTracksToPlaylist(playlistId, foundTrackIds);
+            summary.playlists++;
+          }
+        }
+        completedOperations++;
+        setProgress((completedOperations / totalOperations) * 100);
+      }
+
+      setMessage(`Importación completada: ${summary.playlists} playlists creadas, ${summary.liked} canciones añadidas a 'Me Gusta', y ${summary.followed} artistas seguidos.`);
+      setCurrentExportItem("");
+      await fetchPlaylists(accessToken);
+
     } catch (error) {
-      console.error("Error during import:", error)
-      setMessage(`Error durante la importación: ${error instanceof Error ? error.message : "Error desconocido"}`)
+      console.error("Error during import:", error);
+      setMessage(`Error durante la importación: ${error instanceof Error ? error.message : "Error desconocido"}`);
     } finally {
-      setLoading(false)
-      setProgress(0)
-      setCurrentExportItem("")
+      setLoading(false);
+      setProgress(0);
+      setCurrentExportItem("");
     }
-  }
+  };
 
   const logout = () => {
     setAccessToken(null)
@@ -710,7 +732,6 @@ export default function SpotifyPlaylistManager() {
     setExportStats(null)
     setShowExportPreview(false)
 
-    // Clear stored data
     localStorage.removeItem("spotify_access_token")
     localStorage.removeItem("spotify_user")
     localStorage.removeItem("spotify_token_timestamp")
@@ -718,13 +739,10 @@ export default function SpotifyPlaylistManager() {
 
   if (!accessToken) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-slate-900 dark:via-slate-800 dark:to-emerald-900">
-        <Navbar />
-        <div className="flex items-center justify-center p-4 min-h-[calc(100vh-4rem)]">
-          <div className="w-full max-w-2xl space-y-6">
-            <Card className="w-full max-w-md mx-auto border-0 shadow-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-              <CardHeader className="text-center">
-                <div className="mx-auto w-16 h-16 mb-6 relative">
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="w-full max-w-md mx-auto">
+          <CardHeader className="text-center">
+             <div className="mx-auto w-16 h-16 mb-6 relative">
                   {mounted ? (
                     <Image
                       src={theme === "dark" ? "/logo-dark.png" : "/logo-light.png"}
@@ -745,39 +763,30 @@ export default function SpotifyPlaylistManager() {
                     />
                   )}
                 </div>
-                <CardTitle className="text-2xl bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
-                  Spotify Playlist SudoCode
-                </CardTitle>
-                <CardDescription className="text-slate-600 dark:text-slate-300">
-                  Exporta e importa tus playlists de Spotify con archivos CSV
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button
-                  onClick={loginToSpotify}
-                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-                >
-                  <Music className="w-4 h-4 mr-2" />
-                  Conectar con Spotify
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+            <CardTitle className="text-2xl">Spotify Playlist SudoCode</CardTitle>
+            <CardDescription>
+              Exporta e importa tus playlists de Spotify con archivos CSV
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={loginToSpotify} className="w-full">
+              <Music className="w-4 h-4 mr-2" />
+              Conectar con Spotify
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-slate-900 dark:via-slate-800 dark:to-emerald-900">
-      <Navbar />
-      <div className="max-w-4xl mx-auto p-3 sm:p-4 space-y-4 sm:space-y-6">
-        {/* Header */}
-        <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center space-x-3 sm:space-x-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 relative">
+    <div className="max-w-4xl mx-auto p-4 space-y-6">
+      {/* Header */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+               <div className="w-12 h-12 relative">
                   {mounted ? (
                     <Image
                       src={theme === "dark" ? "/logo-dark.png" : "/logo-light.png"}
@@ -798,294 +807,261 @@ export default function SpotifyPlaylistManager() {
                     />
                   )}
                 </div>
-                <div>
-                  <CardTitle className="text-xl sm:text-2xl bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
-                    Spotify Playlist SudoCode
-                  </CardTitle>
-                  <CardDescription className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
-                    <User className="w-4 h-4" />
-                    <span>Conectado como {user?.display_name}</span>
-                    {user?.email && (
-                      <>
-                        <span>•</span>
-                        <span className="text-xs">{user.email}</span>
-                      </>
-                    )}
-                  </CardDescription>
-                </div>
+              <div>
+                <CardTitle className="text-2xl">Spotify Playlist SudoCode</CardTitle>
+                <CardDescription className="flex items-center space-x-2">
+                  <User className="w-4 h-4" />
+                  <span>Conectado como {user?.display_name}</span>
+                  {user?.email && (
+                    <>
+                      <span>•</span>
+                      <span className="text-xs">{user.email}</span>
+                    </>
+                  )}
+                </CardDescription>
               </div>
-              <div className="flex items-center space-x-2">
+            </div>
+            <div className="flex items-center space-x-2">
                 <ThemeToggle />
-                <Button
-                  variant="outline"
-                  onClick={logout}
-                  className="border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 bg-transparent"
-                >
+                <Button variant="outline" onClick={logout}>
                   <LogOut className="w-4 h-4 mr-2" />
                   Desconectar
                 </Button>
-              </div>
             </div>
-          </CardHeader>
-        </Card>
+          </div>
+        </CardHeader>
+      </Card>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-teal-500 text-white">
-            <CardContent className="p-4 sm:p-6">
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+            <CardContent className="p-6">
               <div className="flex items-center space-x-2">
-                <List className="w-4 h-4 sm:w-5 sm:h-5" />
+                <List className="w-5 h-5" />
                 <div>
-                  <p className="text-xl sm:text-2xl font-bold">{playlists.length}</p>
-                  <p className="text-xs sm:text-sm text-emerald-100">Playlists</p>
+                  <p className="text-2xl font-bold">{playlists.length}</p>
+                  <p className="text-sm text-muted-foreground">Playlists</p>
                 </div>
               </div>
             </CardContent>
-          </Card>
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-rose-500 to-pink-500 text-white">
-            <CardContent className="p-4 sm:p-6">
+        </Card>
+        <Card>
+            <CardContent className="p-6">
               <div className="flex items-center space-x-2">
-                <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Heart className="w-5 h-5" />
                 <div>
-                  <p className="text-xl sm:text-2xl font-bold">♥</p>
-                  <p className="text-xs sm:text-sm text-rose-100">Canciones favoritas</p>
+                  <p className="text-2xl font-bold">♥</p>
+                  <p className="text-sm text-muted-foreground">Canciones favoritas</p>
                 </div>
               </div>
             </CardContent>
-          </Card>
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-indigo-500 text-white">
-            <CardContent className="p-4 sm:p-6">
+        </Card>
+        <Card>
+            <CardContent className="p-6">
               <div className="flex items-center space-x-2">
-                <Music className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Music className="w-5 h-5" />
                 <div>
-                  <p className="text-xl sm:text-2xl font-bold">
+                  <p className="text-2xl font-bold">
                     {playlists.reduce((total, playlist) => total + playlist.tracks.total, 0)}
                   </p>
-                  <p className="text-xs sm:text-sm text-blue-100">Total canciones</p>
+                  <p className="text-sm text-muted-foreground">Total canciones</p>
                 </div>
               </div>
             </CardContent>
-          </Card>
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-violet-500 text-white">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center space-x-2">
-                <Users2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                <div>
-                  <p className="text-xl sm:text-2xl font-bold">?</p>
-                  <p className="text-xs sm:text-sm text-purple-100">Artistas seguidos</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Export Preview */}
-        {showExportPreview && exportStats && (
-          <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-blue-800 dark:text-blue-200">
-                <Eye className="w-5 h-5" />
-                <span>Vista Previa de Exportación</span>
-              </CardTitle>
-              <CardDescription className="text-blue-600 dark:text-blue-300">
-                Esto es lo que se exportará en los archivos CSV
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{exportStats.playlists}</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Playlists</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{exportStats.tracks}</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Canciones totales</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-rose-600 dark:text-rose-400">{exportStats.likedSongs}</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Canciones favoritas</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                    {exportStats.followedArtists}
-                  </p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Artistas seguidos</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{exportStats.artists}</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Artistas únicos</p>
-                </div>
-              </div>
-
-              <Alert className="border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/50 mb-4">
-                <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                <AlertDescription className="text-emerald-800 dark:text-emerald-200">
-                  <strong>Se generará 1 archivo unificado:</strong>
-                  <br />• <strong>spotify_complete_export_[usuario]_[fecha].csv</strong> - Todas las canciones y
-                  artistas en un solo archivo
-                  <br />• Columna "Type" indica si es "Track", "Followed Artist" o "Track Artist"
-                </AlertDescription>
-              </Alert>
-
-              <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2 sm:gap-0">
-                <Button
-                  onClick={exportToCSV}
-                  disabled={loading}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Confirmar Exportación
-                </Button>
-                <Button
-                  onClick={() => setShowExportPreview(false)}
-                  variant="outline"
-                  className="border-slate-200 dark:border-slate-700"
-                >
-                  Cancelar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Export Section */}
-        <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-slate-800 dark:text-slate-200">
-              <Download className="w-5 h-5" />
-              <span>Exportar Contenido</span>
-            </CardTitle>
-            <CardDescription className="text-slate-600 dark:text-slate-400">
-              Descarga todas tus playlists, canciones favoritas y artistas en formato CSV
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {!showExportPreview ? (
-              <Button
-                onClick={previewExport}
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-lg"
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                Ver Qué Se Exportará
-              </Button>
-            ) : (
-              <Button
-                onClick={exportToCSV}
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Exportar a CSV
-              </Button>
-            )}
-          </CardContent>
         </Card>
-
-        {/* Import Section */}
-        <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-slate-800 dark:text-slate-200">
-              <Upload className="w-5 h-5" />
-              <span>Importar Playlists</span>
-            </CardTitle>
-            <CardDescription className="text-slate-600 dark:text-slate-400">
-              Sube un archivo CSV para crear playlists y agregar canciones favoritas
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="csv-file" className="text-slate-700 dark:text-slate-300">
-                Seleccionar archivo CSV
-              </Label>
-              <Input
-                id="csv-file"
-                type="file"
-                accept=".csv"
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                className="border-slate-200 dark:border-slate-700 focus:border-emerald-500 dark:focus:border-emerald-400"
-              />
-              {selectedFile && (
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-                  Archivo seleccionado: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
-                </p>
-              )}
-            </div>
-
-            <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/50">
-              <AlertDescription className="text-blue-800 dark:text-blue-200">
-                <strong>Formato esperado del CSV:</strong>
-                <br />• Primera línea: encabezados
-                <br />• Columnas: Playlist, Canción, Artista, Álbum, Duración, ID, Fecha
-                <br />• Para canciones favoritas usa "Liked Songs" como nombre de playlist
-              </AlertDescription>
-            </Alert>
-
-            <Button
-              onClick={importFromCSV}
-              disabled={!selectedFile || loading}
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-lg"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              {loading ? "Importando..." : "Importar desde CSV"}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Progress and Messages */}
-        {loading && (
-          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+        <Card>
             <CardContent className="p-6">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
-                  <span>{currentExportItem || message}</span>
-                  <span>{Math.round(progress)}%</span>
+              <div className="flex items-center space-x-2">
+                <Users2 className="w-5 h-5" />
+                <div>
+                  <p className="text-2xl font-bold">?</p>
+                  <p className="text-sm text-muted-foreground">Artistas seguidos</p>
                 </div>
-                <Progress value={progress} className="w-full" />
               </div>
             </CardContent>
-          </Card>
-        )}
+        </Card>
+      </div>
 
-        {message && !loading && (
-          <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/50">
-            <AlertDescription className="text-blue-800 dark:text-blue-200">{message}</AlertDescription>
-          </Alert>
-        )}
-
-        {/* Playlists List */}
-        <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+      {/* Export Preview */}
+      {showExportPreview && exportStats && (
+        <Card>
           <CardHeader>
-            <CardTitle className="text-slate-800 dark:text-slate-200">Tus Playlists</CardTitle>
-            <CardDescription className="text-slate-600 dark:text-slate-400">
-              Lista de todas tus playlists de Spotify
+            <CardTitle className="flex items-center space-x-2">
+              <Eye className="w-5 h-5" />
+              <span>Vista Previa de Exportación</span>
+            </CardTitle>
+            <CardDescription>
+              Esto es lo que se exportará en los archivos CSV
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {playlists.map((playlist) => (
-                <div
-                  key={playlist.id}
-                  className="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50/50 dark:bg-slate-700/50"
-                >
-                  <div>
-                    <p className="font-medium text-slate-800 dark:text-slate-200">{playlist.name}</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                      {playlist.tracks.total} canciones • {playlist.owner.display_name}
-                    </p>
-                  </div>
-                  <Badge
-                    variant="secondary"
-                    className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
-                  >
-                    {playlist.tracks.total}
-                  </Badge>
-                </div>
-              ))}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold">{exportStats.playlists}</p>
+                <p className="text-sm text-muted-foreground">Playlists</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold">{exportStats.tracks}</p>
+                <p className="text-sm text-muted-foreground">Canciones totales</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold">{exportStats.likedSongs}</p>
+                <p className="text-sm text-muted-foreground">Canciones favoritas</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold">
+                  {exportStats.followedArtists}
+                </p>
+                <p className="text-sm text-muted-foreground">Artistas seguidos</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold">{exportStats.artists}</p>
+                <p className="text-sm text-muted-foreground">Artistas únicos</p>
+              </div>
+            </div>
+
+            <Alert>
+              <CheckCircle className="h-4 w-4" />
+              <AlertTitle>Se generará 1 archivo unificado</AlertTitle>
+              <AlertDescription>
+                • <strong>spotify_complete_export_[usuario]_[fecha].csv</strong> - Todas las canciones y
+                artistas en un solo archivo
+                <br />• Columna "Type" indica si es "Track", "Followed Artist" o "Track Artist"
+              </AlertDescription>
+            </Alert>
+
+            <div className="flex gap-2 mt-4">
+              <Button onClick={exportToCSV} disabled={loading}>
+                <Download className="w-4 h-4 mr-2" />
+                Confirmar Exportación
+              </Button>
+              <Button onClick={() => setShowExportPreview(false)} variant="outline">
+                Cancelar
+              </Button>
             </div>
           </CardContent>
         </Card>
-      </div>
+      )}
+
+      {/* Export Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Download className="w-5 h-5" />
+            <span>Exportar Contenido</span>
+          </CardTitle>
+          <CardDescription>
+            Descarga todas tus playlists, canciones favoritas y artistas en formato CSV
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {!showExportPreview ? (
+            <Button onClick={previewExport} disabled={loading} className="w-full">
+              <Eye className="w-4 h-4 mr-2" />
+              Ver Qué Se Exportará
+            </Button>
+          ) : (
+            <Button onClick={exportToCSV} disabled={loading} className="w-full">
+              <Download className="w-4 h-4 mr-2" />
+              Exportar a CSV
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Import Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Upload className="w-5 h-5" />
+            <span>Importar Playlists</span>
+          </CardTitle>
+          <CardDescription>
+            Sube un archivo CSV para crear playlists y agregar canciones favoritas
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid w-full max-w-sm items-center gap-1.5">
+            <Label htmlFor="csv-file">Seleccionar archivo CSV</Label>
+            <Input
+              id="csv-file"
+              type="file"
+              accept=".csv"
+              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+            />
+            {selectedFile && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Archivo seleccionado: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+              </p>
+            )}
+          </div>
+
+          <Alert>
+            <AlertTitle>Formato esperado del CSV</AlertTitle>
+            <AlertDescription>
+              • Primera línea: encabezados
+              <br />• Columnas: Type, Playlist, Song, Artist...
+              <br />• Para canciones favoritas usa "Liked Songs" como nombre de playlist
+            </AlertDescription>
+          </Alert>
+
+          <Button onClick={importFromCSV} disabled={!selectedFile || loading} className="w-full">
+            <Upload className="w-4 h-4 mr-2" />
+            {loading ? "Importando..." : "Importar desde CSV"}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Progress and Messages */}
+      {loading && (
+        <Card>
+          <CardContent className="p-6">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>{currentExportItem || message}</span>
+                <span>{Math.round(progress)}%</span>
+              </div>
+              <Progress value={progress} className="w-full" />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {message && !loading && (
+        <Alert>
+          <AlertDescription>{message}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Playlists List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Tus Playlists</CardTitle>
+          <CardDescription>
+            Lista de todas tus playlists de Spotify
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {playlists.map((playlist) => (
+              <div
+                key={playlist.id}
+                className="flex items-center justify-between p-3 border rounded-lg"
+              >
+                <div>
+                  <p className="font-medium">{playlist.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {playlist.tracks.total} canciones • {playlist.owner.display_name}
+                  </p>
+                </div>
+                <Badge variant="secondary">
+                  {playlist.tracks.total}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
