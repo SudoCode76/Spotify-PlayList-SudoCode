@@ -4,8 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
-  Github,
-  Linkedin,
   MessageCircle,
   Code,
   User,
@@ -16,7 +14,6 @@ import {
   Music,
   Users,
 } from "lucide-react"
-import { Navbar } from "@/components/navbar"
 import Link from "next/link"
 
 export default function AboutPage() {
